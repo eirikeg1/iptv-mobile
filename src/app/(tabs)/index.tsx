@@ -2,7 +2,6 @@ import { Image } from 'expo-image';
 import { Platform, StyleSheet } from 'react-native';
 
 import { VideoPreviewCarousel } from '@/components/domain/general-placeholder-components/preview-components/video-preview-carousel';
-import { HelloWave } from '@/components/hello-wave';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -20,8 +19,7 @@ export default function HomeScreen() {
       }
     >
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Browse</ThemedText>
-        <HelloWave />
+        <ThemedText type="title">Recommended</ThemedText>
       </ThemedView>
       <VideoPreviewCarousel />
       <ThemedView style={styles.stepContainer}>

@@ -22,7 +22,6 @@ export function VideoPreviewCarousel(props: any) {
     <View>
       <Carousel
         ref={ref}
-        defaultIndex={1}
         width={windowWidth}
         height={itemHeight}
         scrollAnimationDuration={50}
