@@ -3,7 +3,6 @@
     "name": "iptv-mobile",
     "slug": "iptv-mobile",
     "version": "1.0.0",
-    "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "iptvmobile",
     "userInterfaceStyle": "automatic",
