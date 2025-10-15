@@ -23,13 +23,15 @@ export default function TabTwoScreen() {
           source={require('../../../assets/images/football-scene-horizontal.png')}
           style={styles.footballImage}
         />
-      }>
+      }
+    >
       <ThemedView style={styles.titleContainer}>
         <ThemedText
           type="title"
           style={{
             fontFamily: Fonts.rounded,
-          }}>
+          }}
+        >
           Explore
         </ThemedText>
       </ThemedView>
