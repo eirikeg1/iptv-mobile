@@ -1,6 +1,7 @@
 import { Image } from 'expo-image';
 import { Platform, StyleSheet } from 'react-native';
 
+import { VideoPreviewCarousel } from '@/components/domain/general-placeholder-components/preview-components/video-preview-carousel';
 import { HelloWave } from '@/components/hello-wave';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
@@ -16,11 +17,13 @@ export default function HomeScreen() {
           source={require('../../../assets/images/football-scene-horizontal.png')}
           style={styles.reactLogo}
         />
-      }>
+      }
+    >
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Browse</ThemedText>
         <HelloWave />
       </ThemedView>
+      <VideoPreviewCarousel />
       <ThemedView style={styles.stepContainer}>
         <ThemedText type="subtitle">Step 1: Try it</ThemedText>
         <ThemedText>
