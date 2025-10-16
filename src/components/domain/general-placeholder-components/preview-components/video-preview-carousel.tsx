@@ -1,52 +1,131 @@
 import { ThemedText } from '@/components/themed-text';
+import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { Dimensions, Text, View } from 'react-native';
-import { useSharedValue } from 'react-native-reanimated';
-import Carousel, { ICarouselInstance } from 'react-native-reanimated-carousel';
+import { Dimensions, ScrollView, Text, View } from 'react-native';
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 
-export function VideoPreviewCarousel({title}: {title?: string}) {
-  const ref = React.useRef<ICarouselInstance>(null);
-  const progress = useSharedValue<number>(0);
+interface CardProps {
+  isActive: boolean;
+  displayIndex: number;
+  itemWidth: number;
+  index: number;
+  activeIndex: number;
+  totalItems: number;
+}
 
+function Card({ isActive, displayIndex, itemWidth, index, activeIndex, totalItems }: CardProps) {
+  const INACTIVE_SCALE = 0.8;
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { scale: withTiming(isActive ? 1.0 : INACTIVE_SCALE, { duration: 200 }) },
+      ],
+    };
+  });
+
+  return (
+    <View
+      style={{
+        width: itemWidth,
+        height: 180,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginLeft: index > 0 ? -90 : 0,
+        // zIndex is highest for active, and decreases based on distance from active
+        zIndex: isActive
+          ? totalItems + 1
+          : totalItems - Math.abs(index - activeIndex),
+      }}
+    >
+      <Animated.View
+        style={[
+          {
+            width: itemWidth,
+            height: 160,
+          },
+          animatedStyle,
+        ]}
+      >
+        <View
+          style={{
+            width: itemWidth,
+            height: 160,
+          }}
+          className="flex items-center justify-center rounded-lg overflow-hidden bg-gray-300 dark:bg-gray-700"
+        >
+          <LinearGradient
+            colors={['rgba(0,0,0,0.3)', 'transparent']}
+            start={{ x: 0, y: 0.5 }}
+            end={{ x: 1, y: 0.5 }}
+            style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }}
+          />
+          <Text className="text-white">{`Video ${displayIndex}`}</Text>
+        </View>
+      </Animated.View>
+    </View>
+  );
+}
+
+export function VideoPreviewCarousel({ title }: { title?: string }) {
   const data = [...new Array(6).keys()];
   const [windowWidth, setWindowWidth] = React.useState(Dimensions.get('window').width);
-  const itemWidth = 160; // w-40 = 160px (40 * 4px)
-  const gap = 16; // gap between items in pixels
+  const [activeIndex, setActiveIndex] = React.useState(0);
+  const scrollViewRef = React.useRef<ScrollView>(null);
 
-  // Update dimensions when orientation changes
   React.useEffect(() => {
     const subscription = Dimensions.addEventListener('change', ({ window }) => {
       setWindowWidth(window.width);
     });
-
     return () => subscription?.remove();
   }, []);
 
-  const baseOptions = {
-    parallaxScrollingOffset: windowWidth * 0.6,
-    parallaxScrollingScale: 1,
-    parallaxAdjacentItemScale: 0.90,
+  const ITEM_WIDTH = 180;
+  const OVERLAP = 90;
+  const PREVIOUS_CARD_PEEK = 30;
+  const SNAP_INTERVAL = ITEM_WIDTH - OVERLAP;
+
+  const handleScroll = (event: any) => {
+    const scrollPosition = event.nativeEvent.contentOffset.x;
+    const newIndex = Math.round(scrollPosition / SNAP_INTERVAL);
+    if (newIndex !== activeIndex && newIndex >= 0 && newIndex < data.length) {
+      setActiveIndex(newIndex);
+    }
   };
 
   return (
     <View className="w-full flex flex-col gap-2">
       {title && <ThemedText type="title">{title}</ThemedText>}
-      <Carousel
-        ref={ref}
-        width={windowWidth}
-        height={180}
-        scrollAnimationDuration={50}
-        mode="parallax"
-        modeConfig={baseOptions}
-        data={data}
-        loop={false}
-        onProgressChange={progress}
-        renderItem={({ index }) => (
-          <View className="flex h-40 w-40 items-center justify-center rounded-lg bg-gray-300 dark:bg-gray-700">
-            <Text className="text-white">{`Video ${index + 1}`}</Text>
-          </View>
-        )}
-      />
+      <ScrollView
+        ref={scrollViewRef}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        snapToInterval={SNAP_INTERVAL}
+        decelerationRate="fast"
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+        contentContainerStyle={{
+          paddingLeft: PREVIOUS_CARD_PEEK,
+          paddingRight: windowWidth - ITEM_WIDTH - PREVIOUS_CARD_PEEK,
+        }}
+      >
+        {data.map((item, index) => {
+          const isActive = index === activeIndex;
+          const displayIndex = item + 1;
+
+          return (
+            <Card
+              key={item}
+              isActive={isActive}
+              displayIndex={displayIndex}
+              itemWidth={ITEM_WIDTH}
+              index={index}
+              activeIndex={activeIndex}
+              totalItems={data.length}
+            />
+          );
+        })}
+      </ScrollView>
     </View>
   );
 }
