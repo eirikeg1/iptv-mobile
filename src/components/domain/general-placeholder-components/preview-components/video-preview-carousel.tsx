@@ -86,6 +86,7 @@ export function VideoPreviewCarousel({ title }: VideoPreviewCarouselProps) {
         onScroll={handleScroll}
         scrollEventThrottle={CAROUSEL_CONFIG.SCROLL_EVENT_THROTTLE}
         contentContainerStyle={contentContainerStyle}
+        nestedScrollEnabled={true}
       >
         {data.map((item, index) => (
           <VideoCard
