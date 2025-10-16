@@ -1,7 +1,7 @@
 import { ThemedText } from '@/components/themed-text';
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { Dimensions, ScrollView, Text, View } from 'react-native';
+import { Dimensions, Pressable, ScrollView, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 
 interface CardProps {
@@ -11,9 +11,10 @@ interface CardProps {
   index: number;
   activeIndex: number;
   totalItems: number;
+  onPress: () => void;
 }
 
-function Card({ isActive, displayIndex, itemWidth, index, activeIndex, totalItems }: CardProps) {
+function Card({ isActive, displayIndex, itemWidth, index, activeIndex, totalItems, onPress }: CardProps) {
   const INACTIVE_SCALE = 0.8;
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -25,7 +26,8 @@ function Card({ isActive, displayIndex, itemWidth, index, activeIndex, totalItem
   });
 
   return (
-    <View
+    <Pressable
+      onPress={onPress}
       style={{
         width: itemWidth,
         height: 180,
@@ -63,7 +65,7 @@ function Card({ isActive, displayIndex, itemWidth, index, activeIndex, totalItem
           <Text className="text-white">{`Video ${displayIndex}`}</Text>
         </View>
       </Animated.View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -91,6 +93,17 @@ export function VideoPreviewCarousel({ title }: { title?: string }) {
     if (newIndex !== activeIndex && newIndex >= 0 && newIndex < data.length) {
       setActiveIndex(newIndex);
     }
+  };
+
+  const handleCardPress = (index: number) => {
+    if (index === activeIndex) return; // Already selected
+
+    const targetPosition = index * SNAP_INTERVAL;
+    scrollViewRef.current?.scrollTo({
+      x: targetPosition,
+      animated: true,
+    });
+    setActiveIndex(index);
   };
 
   return (
@@ -122,6 +135,7 @@ export function VideoPreviewCarousel({ title }: { title?: string }) {
               index={index}
               activeIndex={activeIndex}
               totalItems={data.length}
+              onPress={() => handleCardPress(index)}
             />
           );
         })}
