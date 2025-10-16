@@ -102,6 +102,13 @@ export function VideoPreviewCarousel({ title }: VideoPreviewCarouselProps) {
           />
         ))}
       </ScrollView>
+      <ThemedText
+        type="default"
+        className="text-gray-400 pl-4"
+      >
+        {`Video ${activeIndex + 1}`} 
+        
+      </ThemedText>
     </View>
   );
 }
