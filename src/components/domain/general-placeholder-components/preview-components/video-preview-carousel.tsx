@@ -1,110 +1,78 @@
 import { ThemedText } from '@/components/themed-text';
-import { LinearGradient } from 'expo-linear-gradient';
-import React from 'react';
-import { Dimensions, Pressable, ScrollView, Text, View } from 'react-native';
-import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Dimensions, NativeScrollEvent, NativeSyntheticEvent, ScrollView, View } from 'react-native';
+import { VideoCard } from './video-card';
 
-interface CardProps {
-  isActive: boolean;
-  displayIndex: number;
-  itemWidth: number;
-  index: number;
-  activeIndex: number;
-  totalItems: number;
-  onPress: () => void;
+// Carousel layout constants
+const CAROUSEL_CONFIG = {
+  ITEM_WIDTH: 180,
+  OVERLAP: 90,
+  PREVIOUS_CARD_PEEK: 30,
+  ITEM_COUNT: 25,
+  SCROLL_EVENT_THROTTLE: 16,
+} as const;
+
+interface VideoPreviewCarouselProps {
+  title?: string;
 }
 
-function Card({ isActive, displayIndex, itemWidth, index, activeIndex, totalItems, onPress }: CardProps) {
-  const INACTIVE_SCALE = 0.8;
+export function VideoPreviewCarousel({ title }: VideoPreviewCarouselProps) {
+  const [windowWidth, setWindowWidth] = useState(Dimensions.get('window').width);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const scrollViewRef = useRef<ScrollView>(null);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { scale: withTiming(isActive ? 1.0 : INACTIVE_SCALE, { duration: 200 }) },
-      ],
-    };
-  });
+  const data = useMemo(() => Array.from({ length: CAROUSEL_CONFIG.ITEM_COUNT }, (_, i) => i), []);
 
-  return (
-    <Pressable
-      onPress={onPress}
-      style={{
-        width: itemWidth,
-        height: 180,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginLeft: index > 0 ? -90 : 0,
-        // zIndex is highest for active, and decreases based on distance from active
-        zIndex: isActive
-          ? totalItems + 1
-          : totalItems - Math.abs(index - activeIndex),
-      }}
-    >
-      <Animated.View
-        style={[
-          {
-            width: itemWidth,
-            height: 160,
-          },
-          animatedStyle,
-        ]}
-      >
-        <View
-          style={{
-            width: itemWidth,
-            height: 160,
-          }}
-          className="flex items-center justify-center rounded-lg overflow-hidden bg-gray-300 dark:bg-gray-700"
-        >
-          <LinearGradient
-            colors={['rgba(0,0,0,0.3)', 'transparent']}
-            start={{ x: 0, y: 0.5 }}
-            end={{ x: 1, y: 0.5 }}
-            style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }}
-          />
-          <Text className="text-white">{`Video ${displayIndex}`}</Text>
-        </View>
-      </Animated.View>
-    </Pressable>
+  const snapInterval = useMemo(
+    () => CAROUSEL_CONFIG.ITEM_WIDTH - CAROUSEL_CONFIG.OVERLAP,
+    []
   );
-}
 
-export function VideoPreviewCarousel({ title }: { title?: string }) {
-  const data = [...new Array(6).keys()];
-  const [windowWidth, setWindowWidth] = React.useState(Dimensions.get('window').width);
-  const [activeIndex, setActiveIndex] = React.useState(0);
-  const scrollViewRef = React.useRef<ScrollView>(null);
-
-  React.useEffect(() => {
+  // Handle window dimension changes
+  useEffect(() => {
     const subscription = Dimensions.addEventListener('change', ({ window }) => {
       setWindowWidth(window.width);
     });
     return () => subscription?.remove();
   }, []);
 
-  const ITEM_WIDTH = 180;
-  const OVERLAP = 90;
-  const PREVIOUS_CARD_PEEK = 30;
-  const SNAP_INTERVAL = ITEM_WIDTH - OVERLAP;
+  // Handle scroll events to update active index
+  const handleScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const scrollPosition = event.nativeEvent.contentOffset.x;
+      const newIndex = Math.round(scrollPosition / snapInterval);
 
-  const handleScroll = (event: any) => {
-    const scrollPosition = event.nativeEvent.contentOffset.x;
-    const newIndex = Math.round(scrollPosition / SNAP_INTERVAL);
-    if (newIndex !== activeIndex && newIndex >= 0 && newIndex < data.length) {
-      setActiveIndex(newIndex);
-    }
-  };
+      if (newIndex !== activeIndex && newIndex >= 0 && newIndex < data.length) {
+        setActiveIndex(newIndex);
+      }
+    },
+    [activeIndex, data.length, snapInterval]
+  );
 
-  const handleCardPress = (index: number) => {
-    if (index === activeIndex) return; // Already selected
+  // Handle card press to scroll to selected card
+  const handleCardPress = useCallback(
+    (index: number) => {
+      if (index === activeIndex) {
+        return; // Card is already active
+      }
 
-    const targetPosition = index * SNAP_INTERVAL;
-    scrollViewRef.current?.scrollTo({
-      x: targetPosition,
-      animated: true,
-    });
-    setActiveIndex(index);
-  };
+      const targetPosition = index * snapInterval;
+      scrollViewRef.current?.scrollTo({
+        x: targetPosition,
+        animated: true,
+      });
+      setActiveIndex(index);
+    },
+    [activeIndex, snapInterval]
+  );
+
+  const contentContainerStyle = useMemo(
+    () => ({
+      paddingLeft: CAROUSEL_CONFIG.PREVIOUS_CARD_PEEK,
+      paddingRight: windowWidth - CAROUSEL_CONFIG.ITEM_WIDTH - CAROUSEL_CONFIG.PREVIOUS_CARD_PEEK,
+    }),
+    [windowWidth]
+  );
 
   return (
     <View className="w-full flex flex-col gap-2">
@@ -113,32 +81,25 @@ export function VideoPreviewCarousel({ title }: { title?: string }) {
         ref={scrollViewRef}
         horizontal
         showsHorizontalScrollIndicator={false}
-        snapToInterval={SNAP_INTERVAL}
+        snapToInterval={snapInterval}
         decelerationRate="fast"
         onScroll={handleScroll}
-        scrollEventThrottle={16}
-        contentContainerStyle={{
-          paddingLeft: PREVIOUS_CARD_PEEK,
-          paddingRight: windowWidth - ITEM_WIDTH - PREVIOUS_CARD_PEEK,
-        }}
+        scrollEventThrottle={CAROUSEL_CONFIG.SCROLL_EVENT_THROTTLE}
+        contentContainerStyle={contentContainerStyle}
       >
-        {data.map((item, index) => {
-          const isActive = index === activeIndex;
-          const displayIndex = item + 1;
-
-          return (
-            <Card
-              key={item}
-              isActive={isActive}
-              displayIndex={displayIndex}
-              itemWidth={ITEM_WIDTH}
-              index={index}
-              activeIndex={activeIndex}
-              totalItems={data.length}
-              onPress={() => handleCardPress(index)}
-            />
-          );
-        })}
+        {data.map((item, index) => (
+          <VideoCard
+            key={item}
+            isActive={index === activeIndex}
+            displayIndex={item + 1}
+            itemWidth={CAROUSEL_CONFIG.ITEM_WIDTH}
+            index={index}
+            activeIndex={activeIndex}
+            totalItems={data.length}
+            overlap={CAROUSEL_CONFIG.OVERLAP}
+            onPress={() => handleCardPress(index)}
+          />
+        ))}
       </ScrollView>
     </View>
   );
