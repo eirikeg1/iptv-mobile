@@ -48,6 +48,26 @@ export function VideoPreviewCarousel({ title, data }: VideoPreviewCarouselProps)
     [activeIndex, data.length, snapInterval]
   );
 
+  // Handle momentum scroll end to snap to closest card
+  const handleMomentumScrollEnd = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const scrollPosition = event.nativeEvent.contentOffset.x;
+      const currentIndex = Math.round(scrollPosition / snapInterval);
+
+      // Snap to the current position
+      const targetPosition = currentIndex * snapInterval;
+      scrollViewRef.current?.scrollTo({
+        x: targetPosition,
+        animated: true,
+      });
+
+      if (currentIndex !== activeIndex && currentIndex >= 0 && currentIndex < data.length) {
+        setActiveIndex(currentIndex);
+      }
+    },
+    [activeIndex, data.length, snapInterval]
+  );
+
   // Handle card press to scroll to selected card
   const handleCardPress = useCallback(
     (index: number) => {
@@ -81,8 +101,10 @@ export function VideoPreviewCarousel({ title, data }: VideoPreviewCarouselProps)
         horizontal
         showsHorizontalScrollIndicator={false}
         snapToInterval={snapInterval}
-        decelerationRate="fast"
+        decelerationRate={0.98}
+        disableIntervalMomentum={true}
         onScroll={handleScroll}
+        onMomentumScrollEnd={handleMomentumScrollEnd}
         scrollEventThrottle={CAROUSEL_CONFIG.SCROLL_EVENT_THROTTLE}
         contentContainerStyle={contentContainerStyle}
         nestedScrollEnabled={true}
