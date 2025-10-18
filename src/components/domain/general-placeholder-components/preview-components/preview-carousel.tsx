@@ -8,20 +8,19 @@ const CAROUSEL_CONFIG = {
   ITEM_WIDTH: 180,
   OVERLAP: 90,
   PREVIOUS_CARD_PEEK: 30,
-  ITEM_COUNT: 25,
   SCROLL_EVENT_THROTTLE: 16,
 } as const;
 
 interface VideoPreviewCarouselProps {
+  data: number[];
   title?: string;
 }
 
-export function VideoPreviewCarousel({ title }: VideoPreviewCarouselProps) {
+export function VideoPreviewCarousel({ title, data }: VideoPreviewCarouselProps) {
   const [windowWidth, setWindowWidth] = useState(Dimensions.get('window').width);
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
 
-  const data = useMemo(() => Array.from({ length: CAROUSEL_CONFIG.ITEM_COUNT }, (_, i) => i), []);
 
   const snapInterval = useMemo(
     () => CAROUSEL_CONFIG.ITEM_WIDTH - CAROUSEL_CONFIG.OVERLAP,

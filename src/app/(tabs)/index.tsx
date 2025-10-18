@@ -1,13 +1,19 @@
 import { Image } from 'expo-image';
 import { Platform, StyleSheet } from 'react-native';
 
-import { VideoPreviewCarousel } from '@/components/domain/general-placeholder-components/preview-components/video-preview-carousel';
+import { VideoPreviewCarousel } from '@/components/domain/general-placeholder-components/preview-components/preview-carousel';
+import { VideoPreviewGrid } from '@/components/domain/general-placeholder-components/preview-components/preview-grid';
+import { VideoGridItem } from '@/components/domain/general-placeholder-components/preview-components/video-grid-item';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Link } from 'expo-router';
+import { useMemo } from 'react';
 
 export default function HomeScreen() {
+  const data = useMemo(() => Array.from({ length: 25 }, (_, i) => i), []);
+
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
@@ -18,7 +24,12 @@ export default function HomeScreen() {
         />
       }
     >
-      <VideoPreviewCarousel title="Recommended" />
+      <VideoPreviewCarousel title="Recommended" data={data} />
+      <VideoPreviewGrid title="All Videos">
+        {data.map((item) => (
+          <VideoGridItem key={item} displayIndex={item + 1} />
+        ))}
+      </VideoPreviewGrid>
       <ThemedView style={styles.stepContainer}>
         <ThemedText type="subtitle">Step 1: Try it</ThemedText>
         <ThemedText>
