@@ -1,16 +1,10 @@
-import { useState, useCallback, useMemo, memo } from 'react';
-import {
-  View,
-  TextInput,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-  Switch,
-} from 'react-native';
+import { useState, useCallback, memo } from 'react';
+import { View, StyleSheet, TouchableOpacity, ActivityIndicator, Switch } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { usePlaylistStore } from '@/states/playlist-store';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 
 interface PlaylistFormProps {
   onSuccess?: () => void;
@@ -22,9 +16,6 @@ interface PlaylistFormProps {
  * Supports optional authentication credentials.
  */
 export const PlaylistForm = memo(function PlaylistForm({ onSuccess, onCancel }: PlaylistFormProps) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
   const [useCredentials, setUseCredentials] = useState(false);
@@ -36,22 +27,32 @@ export const PlaylistForm = memo(function PlaylistForm({ onSuccess, onCancel }: 
   const addPlaylist = usePlaylistStore((state) => state.addPlaylist);
 
   const handleSubmit = useCallback(async () => {
+    console.log('[PlaylistForm] Submit started');
     setError(null);
 
     if (!name.trim()) {
+      console.warn('[PlaylistForm] Validation failed: name is empty');
       setError('Please enter a playlist name');
       return;
     }
 
     if (!url.trim()) {
+      console.warn('[PlaylistForm] Validation failed: URL is empty');
       setError('Please enter a playlist URL');
       return;
     }
 
     if (useCredentials && (!username.trim() || !password.trim())) {
+      console.warn('[PlaylistForm] Validation failed: credentials incomplete');
       setError('Please enter both username and password');
       return;
     }
+
+    console.log('[PlaylistForm] Validation passed, submitting:', {
+      name: name.trim(),
+      urlLength: url.trim().length,
+      hasCredentials: useCredentials,
+    });
 
     setIsSubmitting(true);
 
@@ -64,6 +65,7 @@ export const PlaylistForm = memo(function PlaylistForm({ onSuccess, onCancel }: 
           : undefined,
       });
 
+      console.log('[PlaylistForm] Playlist added successfully, clearing form');
       setName('');
       setUrl('');
       setUsername('');
@@ -72,24 +74,15 @@ export const PlaylistForm = memo(function PlaylistForm({ onSuccess, onCancel }: 
 
       onSuccess?.();
     } catch (err) {
+      console.error('[PlaylistForm] Error adding playlist:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to add playlist';
+      console.error('[PlaylistForm] Error message:', errorMessage);
       setError(errorMessage);
     } finally {
       setIsSubmitting(false);
+      console.log('[PlaylistForm] Submit completed');
     }
   }, [name, url, useCredentials, username, password, addPlaylist, onSuccess]);
-
-  const inputStyle = useMemo(
-    () => [
-      styles.input,
-      {
-        backgroundColor: isDark ? '#2a2a2a' : '#f5f5f5',
-        color: isDark ? '#ffffff' : '#000000',
-        borderColor: isDark ? '#444' : '#ddd',
-      },
-    ],
-    [isDark]
-  );
 
   return (
     <ThemedView style={styles.container}>
@@ -110,27 +103,24 @@ export const PlaylistForm = memo(function PlaylistForm({ onSuccess, onCancel }: 
 
       <View style={styles.formGroup}>
         <ThemedText style={styles.label}>Playlist Name</ThemedText>
-        <TextInput
-          style={inputStyle}
+        <Input
           value={name}
           onChangeText={setName}
           placeholder="e.g., My IPTV Playlist"
-          placeholderTextColor={isDark ? '#888' : '#999'}
           editable={!isSubmitting}
           accessibilityLabel="Playlist name"
           accessibilityHint="Enter a name for your IPTV playlist"
           returnKeyType="next"
+          error={!!error && !name.trim()}
         />
       </View>
 
       <View style={styles.formGroup}>
         <ThemedText style={styles.label}>Playlist URL</ThemedText>
-        <TextInput
-          style={inputStyle}
+        <Textarea
           value={url}
           onChangeText={setUrl}
           placeholder="https://example.com/playlist.m3u"
-          placeholderTextColor={isDark ? '#888' : '#999'}
           keyboardType="url"
           autoCapitalize="none"
           autoCorrect={false}
@@ -139,17 +129,24 @@ export const PlaylistForm = memo(function PlaylistForm({ onSuccess, onCancel }: 
           accessibilityHint="Enter the M3U playlist URL"
           returnKeyType="next"
           textContentType="URL"
+          error={!!error && !url.trim()}
         />
+        <ThemedText style={styles.helpText}>
+          If your URL contains username/password parameters, paste the full URL and skip authentication below
+        </ThemedText>
       </View>
 
       <View style={styles.switchContainer}>
-        <ThemedText style={styles.label}>Requires Authentication</ThemedText>
+        <View style={styles.switchLabelContainer}>
+          <ThemedText style={styles.label}>HTTP Basic Auth</ThemedText>
+          <ThemedText style={styles.helpText}>Only for HTTP Basic Authentication</ThemedText>
+        </View>
         <Switch
           value={useCredentials}
           onValueChange={setUseCredentials}
           disabled={isSubmitting}
           accessibilityLabel="Requires authentication"
-          accessibilityHint="Toggle if the playlist requires username and password"
+          accessibilityHint="Toggle if the playlist requires HTTP Basic Auth"
         />
       </View>
 
@@ -157,12 +154,10 @@ export const PlaylistForm = memo(function PlaylistForm({ onSuccess, onCancel }: 
         <>
           <View style={styles.formGroup}>
             <ThemedText style={styles.label}>Username</ThemedText>
-            <TextInput
-              style={inputStyle}
+            <Input
               value={username}
               onChangeText={setUsername}
               placeholder="Username"
-              placeholderTextColor={isDark ? '#888' : '#999'}
               autoCapitalize="none"
               autoCorrect={false}
               editable={!isSubmitting}
@@ -170,17 +165,16 @@ export const PlaylistForm = memo(function PlaylistForm({ onSuccess, onCancel }: 
               accessibilityHint="Enter your playlist username"
               returnKeyType="next"
               textContentType="username"
+              error={!!error && useCredentials && !username.trim()}
             />
           </View>
 
           <View style={styles.formGroup}>
             <ThemedText style={styles.label}>Password</ThemedText>
-            <TextInput
-              style={inputStyle}
+            <Input
               value={password}
               onChangeText={setPassword}
               placeholder="Password"
-              placeholderTextColor={isDark ? '#888' : '#999'}
               secureTextEntry
               autoCapitalize="none"
               autoCorrect={false}
@@ -189,6 +183,7 @@ export const PlaylistForm = memo(function PlaylistForm({ onSuccess, onCancel }: 
               accessibilityHint="Enter your playlist password"
               returnKeyType="done"
               textContentType="password"
+              error={!!error && useCredentials && !password.trim()}
             />
           </View>
         </>
@@ -243,18 +238,20 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontWeight: '600',
   },
-  input: {
-    height: 44,
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    fontSize: 16,
+  helpText: {
+    fontSize: 12,
+    opacity: 0.6,
+    marginTop: 6,
   },
   switchContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
+    gap: 12,
+  },
+  switchLabelContainer: {
+    flex: 1,
   },
   errorContainer: {
     backgroundColor: '#fee',
