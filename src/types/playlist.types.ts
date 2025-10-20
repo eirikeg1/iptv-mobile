@@ -1,16 +1,12 @@
 import type { Playlist as IPTVPlaylist } from 'iptv-playlist-parser';
 
-/**
- * Credentials for accessing authenticated IPTV playlists
- */
+/** Authentication credentials for protected IPTV playlists. */
 export interface PlaylistCredentials {
   username: string;
   password: string;
 }
 
-/**
- * Individual channel from parsed playlist
- */
+/** Represents a single IPTV channel with its metadata. */
 export interface Channel {
   name: string;
   url: string;
@@ -31,14 +27,10 @@ export interface Channel {
   };
 }
 
-/**
- * Parsed playlist data from iptv-playlist-parser
- */
+/** Parsed M3U playlist data from iptv-playlist-parser library. */
 export type ParsedPlaylist = IPTVPlaylist;
 
-/**
- * Main playlist entity stored in the application
- */
+/** Playlist entity with metadata and parsed channel data. */
 export interface Playlist {
   id: string;
   name: string;
@@ -51,27 +43,21 @@ export interface Playlist {
   lastFetchedAt?: Date;
 }
 
-/**
- * DTO for creating a new playlist
- */
+/** Input data for creating a new playlist. */
 export interface CreatePlaylistInput {
   name: string;
   url: string;
   credentials?: PlaylistCredentials;
 }
 
-/**
- * DTO for updating an existing playlist
- */
+/** Input data for updating playlist properties. */
 export interface UpdatePlaylistInput {
   name?: string;
   url?: string;
   credentials?: PlaylistCredentials;
 }
 
-/**
- * State for playlist operations
- */
+/** Status states for async playlist operations. */
 export enum PlaylistStatus {
   IDLE = 'idle',
   LOADING = 'loading',

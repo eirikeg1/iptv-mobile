@@ -1,10 +1,5 @@
 import { useCallback, memo, useMemo } from 'react';
-import {
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  FlatList,
-} from 'react-native';
+import { View, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -16,14 +11,16 @@ interface ChannelGroup {
   channelCount: number;
 }
 
+/**
+ * Displays channel groups from the active playlist.
+ * Groups channels by their group title and shows channel counts.
+ */
 export const ChannelGroupList = memo(function ChannelGroupList() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
-
   const activePlaylist = usePlaylistStore((state) => state.getActivePlaylist());
   const channels = activePlaylist?.parsedData?.items || [];
 
-  // Group channels by their group title
   const groups = useMemo(() => {
     const groupMap = new Map<string, number>();
 
@@ -38,55 +35,59 @@ export const ChannelGroupList = memo(function ChannelGroupList() {
   }, [channels]);
 
   const handleGroupPress = useCallback((group: ChannelGroup) => {
-    // TODO: Navigate to channels in this group
-    console.log('Group pressed:', group.title, 'with', group.channelCount, 'channels');
+    if (__DEV__) {
+      console.log('Group pressed:', group.title, 'with', group.channelCount, 'channels');
+    }
   }, []);
 
-  const renderItem = useCallback(({ item }: { item: ChannelGroup }) => {
-    const cardStyle = [
-      styles.groupCard,
-      {
-        backgroundColor: isDark ? '#2a2a2a' : '#f5f5f5',
-        borderColor: isDark ? '#444' : '#ddd',
-      },
-    ];
+  const renderGroupCard = useCallback(
+    ({ item }: { item: ChannelGroup }) => {
+      const cardStyle = [
+        styles.groupCard,
+        {
+          backgroundColor: isDark ? '#2a2a2a' : '#f5f5f5',
+          borderColor: isDark ? '#444' : '#ddd',
+        },
+      ];
 
-    return (
-      <TouchableOpacity
-        style={cardStyle}
-        onPress={() => handleGroupPress(item)}
-        accessibilityRole="button"
-        accessibilityLabel={`${item.title} group`}
-        accessibilityHint={`View ${item.channelCount} channels in this group`}
-      >
-        <View style={styles.groupContent}>
-          <View style={[styles.groupIcon, { backgroundColor: isDark ? '#333' : '#e0e0e0' }]}>
-            <IconSymbol name="folder" size={32} color={isDark ? '#666' : '#999'} />
-          </View>
-
-          <View style={styles.groupInfo}>
-            <ThemedText type="defaultSemiBold" style={styles.groupTitle}>
-              {item.title}
-            </ThemedText>
-
-            <View style={styles.groupMeta}>
-              <IconSymbol name="tv" size={16} color={isDark ? '#aaa' : '#666'} />
-              <ThemedText style={styles.channelCount}>
-                {item.channelCount} {item.channelCount === 1 ? 'channel' : 'channels'}
-              </ThemedText>
+      return (
+        <TouchableOpacity
+          style={cardStyle}
+          onPress={() => handleGroupPress(item)}
+          accessibilityRole="button"
+          accessibilityLabel={`${item.title} group`}
+          accessibilityHint={`View ${item.channelCount} channels in this group`}
+        >
+          <View style={styles.groupContent}>
+            <View style={[styles.groupIcon, { backgroundColor: isDark ? '#333' : '#e0e0e0' }]}>
+              <IconSymbol name="folder" size={32} color={isDark ? '#666' : '#999'} />
             </View>
-          </View>
 
-          <IconSymbol
-            name="chevron.right"
-            size={24}
-            color={isDark ? '#666' : '#999'}
-            style={styles.chevronIcon}
-          />
-        </View>
-      </TouchableOpacity>
-    );
-  }, [isDark, handleGroupPress]);
+            <View style={styles.groupInfo}>
+              <ThemedText type="defaultSemiBold" style={styles.groupTitle}>
+                {item.title}
+              </ThemedText>
+
+              <View style={styles.groupMeta}>
+                <IconSymbol name="tv" size={16} color={isDark ? '#aaa' : '#666'} />
+                <ThemedText style={styles.channelCount}>
+                  {item.channelCount} {item.channelCount === 1 ? 'channel' : 'channels'}
+                </ThemedText>
+              </View>
+            </View>
+
+            <IconSymbol
+              name="chevron.right"
+              size={24}
+              color={isDark ? '#666' : '#999'}
+              style={styles.chevronIcon}
+            />
+          </View>
+        </TouchableOpacity>
+      );
+    },
+    [isDark, handleGroupPress]
+  );
 
   const keyExtractor = useCallback((item: ChannelGroup) => item.title, []);
 
@@ -114,22 +115,10 @@ export const ChannelGroupList = memo(function ChannelGroupList() {
     );
   }
 
-  if (groups.length === 0) {
-    return (
-      <ThemedView style={styles.emptyContainer}>
-        <IconSymbol name="folder" size={64} color={isDark ? '#555' : '#ccc'} />
-        <ThemedText style={styles.emptyTitle}>No Groups</ThemedText>
-        <ThemedText style={styles.emptyText}>
-          This playlist doesn't have any channel groups
-        </ThemedText>
-      </ThemedView>
-    );
-  }
-
   return (
     <FlatList
       data={groups}
-      renderItem={renderItem}
+      renderItem={renderGroupCard}
       keyExtractor={keyExtractor}
       contentContainerStyle={styles.listContainer}
       scrollEnabled={false}

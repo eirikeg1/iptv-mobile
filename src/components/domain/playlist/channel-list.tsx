@@ -1,11 +1,5 @@
 import { useCallback, memo, useMemo } from 'react';
-import {
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  FlatList,
-  Image,
-} from 'react-native';
+import { View, StyleSheet, TouchableOpacity, FlatList, Image } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -14,17 +8,20 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import type { Channel } from '@/types/playlist.types';
 
 interface ChannelListProps {
+  /** Optional group name to filter channels. If omitted, shows all channels. */
   group?: string;
 }
 
+/**
+ * Displays a list of IPTV channels with their metadata.
+ * Can be filtered to show only channels from a specific group.
+ */
 export const ChannelList = memo(function ChannelList({ group }: ChannelListProps) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
-
   const activePlaylist = usePlaylistStore((state) => state.getActivePlaylist());
   const allChannels = activePlaylist?.parsedData?.items || [];
 
-  // Filter channels by group if provided
   const channels = useMemo(() => {
     if (!group) return allChannels;
     return allChannels.filter((channel) => {
@@ -34,86 +31,80 @@ export const ChannelList = memo(function ChannelList({ group }: ChannelListProps
   }, [allChannels, group]);
 
   const handleChannelPress = useCallback((channel: Channel) => {
-    // TODO: Implement channel playback
-    console.log('Channel pressed:', channel.name);
+    if (__DEV__) {
+      console.log('Channel pressed:', channel.name);
+    }
   }, []);
 
-  const renderItem = useCallback(({ item }: { item: Channel }) => {
-    const cardStyle = [
-      styles.channelCard,
-      {
-        backgroundColor: isDark ? '#2a2a2a' : '#f5f5f5',
-        borderColor: isDark ? '#444' : '#ddd',
-      },
-    ];
+  const renderChannelCard = useCallback(
+    ({ item }: { item: Channel }) => {
+      const cardStyle = [
+        styles.channelCard,
+        {
+          backgroundColor: isDark ? '#2a2a2a' : '#f5f5f5',
+          borderColor: isDark ? '#444' : '#ddd',
+        },
+      ];
 
-    return (
-      <TouchableOpacity
-        style={cardStyle}
-        onPress={() => handleChannelPress(item)}
-        accessibilityRole="button"
-        accessibilityLabel={`${item.name} channel`}
-        accessibilityHint="Tap to play this channel"
-      >
-        <View style={styles.channelContent}>
-          {item.tvg.logo ? (
-            <Image
-              source={{ uri: item.tvg.logo }}
-              style={styles.channelLogo}
-              resizeMode="contain"
-            />
-          ) : (
-            <View style={[styles.channelLogo, styles.placeholderLogo]}>
-              <IconSymbol name="tv" size={24} color={isDark ? '#666' : '#999'} />
+      return (
+        <TouchableOpacity
+          style={cardStyle}
+          onPress={() => handleChannelPress(item)}
+          accessibilityRole="button"
+          accessibilityLabel={`${item.name} channel`}
+          accessibilityHint="Tap to play this channel"
+        >
+          <View style={styles.channelContent}>
+            {item.tvg.logo ? (
+              <Image
+                source={{ uri: item.tvg.logo }}
+                style={styles.channelLogo}
+                resizeMode="contain"
+              />
+            ) : (
+              <View style={[styles.channelLogo, styles.placeholderLogo]}>
+                <IconSymbol name="tv" size={24} color={isDark ? '#666' : '#999'} />
+              </View>
+            )}
+
+            <View style={styles.channelInfo}>
+              <ThemedText type="defaultSemiBold" style={styles.channelName}>
+                {item.name}
+              </ThemedText>
+
+              {item.group.title && (
+                <View style={styles.channelMeta}>
+                  <IconSymbol name="folder" size={14} color={isDark ? '#aaa' : '#666'} />
+                  <ThemedText style={styles.channelGroup}>{item.group.title}</ThemedText>
+                </View>
+              )}
+
+              {(item.tvg.country || item.tvg.language) && (
+                <View style={styles.channelMeta}>
+                  {item.tvg.country && (
+                    <ThemedText style={styles.metaText}>{item.tvg.country}</ThemedText>
+                  )}
+                  {item.tvg.country && item.tvg.language && (
+                    <ThemedText style={styles.metaSeparator}>•</ThemedText>
+                  )}
+                  {item.tvg.language && (
+                    <ThemedText style={styles.metaText}>{item.tvg.language}</ThemedText>
+                  )}
+                </View>
+              )}
             </View>
-          )}
 
-          <View style={styles.channelInfo}>
-            <ThemedText type="defaultSemiBold" style={styles.channelName}>
-              {item.name}
-            </ThemedText>
-
-            {item.group.title && (
-              <View style={styles.channelMeta}>
-                <IconSymbol name="folder" size={14} color={isDark ? '#aaa' : '#666'} />
-                <ThemedText style={styles.channelGroup}>
-                  {item.group.title}
-                </ThemedText>
-              </View>
-            )}
-
-            {(item.tvg.country || item.tvg.language) && (
-              <View style={styles.channelMeta}>
-                {item.tvg.country && (
-                  <ThemedText style={styles.metaText}>
-                    {item.tvg.country}
-                  </ThemedText>
-                )}
-                {item.tvg.country && item.tvg.language && (
-                  <ThemedText style={styles.metaSeparator}>•</ThemedText>
-                )}
-                {item.tvg.language && (
-                  <ThemedText style={styles.metaText}>
-                    {item.tvg.language}
-                  </ThemedText>
-                )}
-              </View>
-            )}
+            <IconSymbol name="play.circle" size={28} color="#007AFF" style={styles.playIcon} />
           </View>
+        </TouchableOpacity>
+      );
+    },
+    [isDark, handleChannelPress]
+  );
 
-          <IconSymbol
-            name="play.circle"
-            size={28}
-            color="#007AFF"
-            style={styles.playIcon}
-          />
-        </View>
-      </TouchableOpacity>
-    );
-  }, [isDark, handleChannelPress]);
-
-  const keyExtractor = useCallback((item: Channel, index: number) =>
-    `${item.tvg.id || item.name}-${index}`, []
+  const keyExtractor = useCallback(
+    (item: Channel, index: number) => `${item.tvg.id || item.name}-${index}`,
+    []
   );
 
   if (!activePlaylist) {
@@ -134,7 +125,9 @@ export const ChannelList = memo(function ChannelList({ group }: ChannelListProps
         <IconSymbol name="tv" size={64} color={isDark ? '#555' : '#ccc'} />
         <ThemedText style={styles.emptyTitle}>No Channels</ThemedText>
         <ThemedText style={styles.emptyText}>
-          This playlist doesn't contain any channels
+          {group
+            ? `No channels found in "${group}" group`
+            : "This playlist doesn't contain any channels"}
         </ThemedText>
       </ThemedView>
     );
@@ -143,7 +136,7 @@ export const ChannelList = memo(function ChannelList({ group }: ChannelListProps
   return (
     <FlatList
       data={channels}
-      renderItem={renderItem}
+      renderItem={renderChannelCard}
       keyExtractor={keyExtractor}
       contentContainerStyle={styles.listContainer}
       scrollEnabled={false}
