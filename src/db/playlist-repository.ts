@@ -21,21 +21,33 @@ class InMemoryPlaylistRepository implements IPlaylistRepository {
   private playlists: Map<string, Playlist> = new Map();
 
   async getAll(): Promise<Playlist[]> {
+    console.log('[PlaylistRepository] getAll called, count:', this.playlists.size);
     return Array.from(this.playlists.values());
   }
 
   async getById(id: string): Promise<Playlist | null> {
-    return this.playlists.get(id) || null;
+    console.log('[PlaylistRepository] getById called:', id);
+    const playlist = this.playlists.get(id) || null;
+    console.log('[PlaylistRepository] Found:', !!playlist);
+    return playlist;
   }
 
   async create(playlist: Playlist): Promise<Playlist> {
+    console.log('[PlaylistRepository] create called:', {
+      id: playlist.id,
+      name: playlist.name,
+      channelCount: playlist.channelCount,
+    });
     this.playlists.set(playlist.id, playlist);
+    console.log('[PlaylistRepository] Playlist created, total count:', this.playlists.size);
     return playlist;
   }
 
   async update(id: string, updates: Partial<Playlist>): Promise<Playlist> {
+    console.log('[PlaylistRepository] update called:', id);
     const existing = this.playlists.get(id);
     if (!existing) {
+      console.error('[PlaylistRepository] Playlist not found:', id);
       throw new Error(`Playlist with id ${id} not found`);
     }
 
@@ -46,18 +58,24 @@ class InMemoryPlaylistRepository implements IPlaylistRepository {
     };
 
     this.playlists.set(id, updated);
+    console.log('[PlaylistRepository] Playlist updated');
     return updated;
   }
 
   async delete(id: string): Promise<void> {
+    console.log('[PlaylistRepository] delete called:', id);
     if (!this.playlists.has(id)) {
+      console.error('[PlaylistRepository] Playlist not found:', id);
       throw new Error(`Playlist with id ${id} not found`);
     }
     this.playlists.delete(id);
+    console.log('[PlaylistRepository] Playlist deleted, remaining count:', this.playlists.size);
   }
 
   async clear(): Promise<void> {
+    console.log('[PlaylistRepository] clear called');
     this.playlists.clear();
+    console.log('[PlaylistRepository] All playlists cleared');
   }
 }
 

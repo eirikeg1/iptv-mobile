@@ -31,25 +31,36 @@ export const usePlaylistStore = create<PlaylistState>((set, get) => ({
   error: null,
 
   addPlaylist: async (input: CreatePlaylistInput) => {
+    console.log('[PlaylistStore] addPlaylist called with:', {
+      name: input.name,
+      url: input.url?.substring(0, 50) + '...',
+      hasCredentials: !!input.credentials,
+    });
+
     if (!input.name?.trim()) {
+      console.error('[PlaylistStore] Validation failed: name is empty');
       const error = new Error('Playlist name is required');
       set({ error: error.message });
       throw error;
     }
 
     if (!input.url?.trim()) {
+      console.error('[PlaylistStore] Validation failed: URL is empty');
       const error = new Error('Playlist URL is required');
       set({ error: error.message });
       throw error;
     }
 
     set({ isLoading: true, error: null });
+    console.log('[PlaylistStore] Set loading state to true');
 
     try {
+      console.log('[PlaylistStore] Validating URL...');
       if (!PlaylistService.validateUrl(input.url)) {
         throw new Error('Invalid URL format');
       }
 
+      console.log('[PlaylistStore] Checking for duplicates...');
       const existingPlaylist = get().playlists.find(
         (p) => p.url.toLowerCase() === input.url.toLowerCase()
       );
@@ -57,13 +68,17 @@ export const usePlaylistStore = create<PlaylistState>((set, get) => ({
         throw new Error(`Playlist from this URL already exists: "${existingPlaylist.name}"`);
       }
 
+      console.log('[PlaylistStore] Fetching and parsing playlist...');
       const parsedData = await PlaylistService.fetchAndParsePlaylist(
         input.url,
         input.credentials
       );
+      console.log('[PlaylistStore] Playlist fetched and parsed successfully');
 
+      console.log('[PlaylistStore] Validating parsed data...');
       const validation = PlaylistService.validateParsedData(parsedData);
       if (!validation.valid) {
+        console.error('[PlaylistStore] Validation failed:', validation.errors);
         throw new Error(validation.errors.join(', '));
       }
 
@@ -80,7 +95,14 @@ export const usePlaylistStore = create<PlaylistState>((set, get) => ({
         lastFetchedAt: now,
       };
 
+      console.log('[PlaylistStore] Creating playlist in repository:', {
+        id: playlist.id,
+        name: playlist.name,
+        channelCount: playlist.channelCount,
+      });
+
       await playlistRepository.create(playlist);
+      console.log('[PlaylistStore] Playlist saved to repository');
 
       set((state) => ({
         playlists: [...state.playlists, playlist],
@@ -88,9 +110,13 @@ export const usePlaylistStore = create<PlaylistState>((set, get) => ({
         error: null,
         activePlaylistId: state.playlists.length === 0 ? playlist.id : state.activePlaylistId,
       }));
+
+      console.log('[PlaylistStore] State updated successfully, total playlists:', get().playlists.length);
     } catch (error) {
+      console.error('[PlaylistStore] Error in addPlaylist:', error);
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to add playlist';
+      console.error('[PlaylistStore] Setting error state:', errorMessage);
       set({ error: errorMessage, isLoading: false });
       throw error;
     }
