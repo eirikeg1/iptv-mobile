@@ -1,9 +1,10 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { PlaylistManager } from '@/components/domain/playlist';
 
 export default function SettingsScreen() {
   return (
@@ -21,7 +22,18 @@ export default function SettingsScreen() {
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Settings</ThemedText>
       </ThemedView>
-      <ThemedText>Configure your app preferences and options here.</ThemedText>
+
+      <ThemedView style={styles.section}>
+        <ThemedText type="subtitle" style={styles.sectionTitle}>
+          Playlist Management
+        </ThemedText>
+        <ThemedText style={styles.sectionDescription}>
+          Manage your IPTV playlists and channels
+        </ThemedText>
+        <View style={styles.playlistContainer}>
+          <PlaylistManager />
+        </View>
+      </ThemedView>
     </ParallaxScrollView>
   );
 }
@@ -36,5 +48,19 @@ const styles = StyleSheet.create({
   titleContainer: {
     flexDirection: 'row',
     gap: 8,
+    marginBottom: 16,
+  },
+  section: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    marginBottom: 8,
+  },
+  sectionDescription: {
+    opacity: 0.7,
+    marginBottom: 16,
+  },
+  playlistContainer: {
+    minHeight: 400,
   },
 });

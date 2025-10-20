@@ -8,6 +8,7 @@ import 'react-native-reanimated';
 import '../global.css';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { usePlaylistInit } from '@/hooks/use-playlist-init';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -15,6 +16,9 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+
+  // Initialize playlists on app load
+  usePlaylistInit();
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
