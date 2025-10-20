@@ -17,6 +17,10 @@ interface PlaylistFormProps {
   onCancel?: () => void;
 }
 
+/**
+ * Form for adding a new IPTV playlist with validation.
+ * Supports optional authentication credentials.
+ */
 export const PlaylistForm = memo(function PlaylistForm({ onSuccess, onCancel }: PlaylistFormProps) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
@@ -32,10 +36,8 @@ export const PlaylistForm = memo(function PlaylistForm({ onSuccess, onCancel }: 
   const addPlaylist = usePlaylistStore((state) => state.addPlaylist);
 
   const handleSubmit = useCallback(async () => {
-    // Reset error
     setError(null);
 
-    // Validate
     if (!name.trim()) {
       setError('Please enter a playlist name');
       return;
@@ -54,8 +56,6 @@ export const PlaylistForm = memo(function PlaylistForm({ onSuccess, onCancel }: 
     setIsSubmitting(true);
 
     try {
-      console.log('[PlaylistForm] Starting playlist addition:', { name: name.trim(), url: url.trim() });
-
       await addPlaylist({
         name: name.trim(),
         url: url.trim(),
@@ -64,9 +64,6 @@ export const PlaylistForm = memo(function PlaylistForm({ onSuccess, onCancel }: 
           : undefined,
       });
 
-      console.log('[PlaylistForm] Playlist added successfully');
-
-      // Clear form
       setName('');
       setUrl('');
       setUsername('');
@@ -75,10 +72,8 @@ export const PlaylistForm = memo(function PlaylistForm({ onSuccess, onCancel }: 
 
       onSuccess?.();
     } catch (err) {
-      console.error('[PlaylistForm] Error adding playlist:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to add playlist';
       setError(errorMessage);
-      // Don't call onSuccess if there's an error - keep form open
     } finally {
       setIsSubmitting(false);
     }
@@ -98,10 +93,6 @@ export const PlaylistForm = memo(function PlaylistForm({ onSuccess, onCancel }: 
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedText type="subtitle" style={styles.title}>
-        Add New Playlist
-      </ThemedText>
-
       {error && (
         <View style={styles.errorContainer}>
           <ThemedText style={styles.errorText}>⚠️ {error}</ThemedText>
@@ -244,9 +235,6 @@ export const PlaylistForm = memo(function PlaylistForm({ onSuccess, onCancel }: 
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-  },
-  title: {
-    marginBottom: 16,
   },
   formGroup: {
     marginBottom: 16,

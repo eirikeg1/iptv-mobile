@@ -1,43 +1,32 @@
 import { useState, useCallback, memo } from 'react';
-import {
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  ActivityIndicator,
-} from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { PlaylistForm } from './playlist-form';
+import { PlaylistModal } from './playlist-modal';
 import { PlaylistList } from './playlist-list';
 import { usePlaylistStore } from '@/states/playlist-store';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
+/**
+ * Manages IPTV playlists with add, view, and error handling.
+ * Displays playlists in a list and provides a modal for adding new ones.
+ */
 export const PlaylistManager = memo(function PlaylistManager() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
-  const [showForm, setShowForm] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const playlists = usePlaylistStore((state) => state.playlists);
   const isLoading = usePlaylistStore((state) => state.isLoading);
   const error = usePlaylistStore((state) => state.error);
 
-  console.log('[PlaylistManager] Render - playlists count:', playlists.length);
-
-  const handleFormSuccess = useCallback(() => {
-    console.log('[PlaylistManager] Form success, closing form');
-    setShowForm(false);
+  const handleCloseModal = useCallback(() => {
+    setShowModal(false);
   }, []);
 
-  const handleFormCancel = useCallback(() => {
-    console.log('[PlaylistManager] Form cancelled');
-    setShowForm(false);
-  }, []);
-
-  const handleShowForm = useCallback(() => {
-    console.log('[PlaylistManager] Opening form');
-    setShowForm(true);
+  const handleOpenModal = useCallback(() => {
+    setShowModal(true);
   }, []);
 
   return (
@@ -52,47 +41,37 @@ export const PlaylistManager = memo(function PlaylistManager() {
           </ThemedText>
         </View>
 
-        {!showForm && (
-          <TouchableOpacity
-            style={styles.addButton}
-            onPress={handleShowForm}
-            disabled={isLoading}
-            accessibilityRole="button"
-            accessibilityLabel="Add playlist"
-            accessibilityHint="Open form to add a new IPTV playlist"
-            accessibilityState={{ disabled: isLoading }}
-          >
-            <IconSymbol name="plus" size={20} color="#fff" />
-            <ThemedText style={styles.addButtonText}>Add</ThemedText>
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={handleOpenModal}
+          disabled={isLoading}
+          accessibilityRole="button"
+          accessibilityLabel="Add playlist"
+          accessibilityHint="Open modal to add a new IPTV playlist"
+          accessibilityState={{ disabled: isLoading }}
+        >
+          <IconSymbol name="plus" size={20} color="#fff" />
+          <ThemedText style={styles.addButtonText}>Add</ThemedText>
+        </TouchableOpacity>
       </View>
 
-      {error && !showForm && (
+      {error && (
         <View style={[styles.errorBanner, { backgroundColor: isDark ? '#4a1a1a' : '#fee' }]}>
           <IconSymbol name="exclamationmark.triangle" size={20} color="#c33" />
           <ThemedText style={styles.errorText}>{error}</ThemedText>
         </View>
       )}
 
-      {isLoading && !showForm && (
+      {isLoading && (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#007AFF" />
           <ThemedText style={styles.loadingText}>Loading playlists...</ThemedText>
         </View>
       )}
 
-      {!isLoading && (
-        <>
-          {showForm ? (
-            <ScrollView style={styles.formContainer}>
-              <PlaylistForm onSuccess={handleFormSuccess} onCancel={handleFormCancel} />
-            </ScrollView>
-          ) : (
-            <PlaylistList />
-          )}
-        </>
-      )}
+      {!isLoading && <PlaylistList />}
+
+      <PlaylistModal visible={showModal} onClose={handleCloseModal} />
     </ThemedView>
   );
 });
@@ -130,9 +109,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-  },
-  formContainer: {
-    flex: 1,
   },
   errorBanner: {
     flexDirection: 'row',
