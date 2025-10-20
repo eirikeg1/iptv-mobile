@@ -1,13 +1,13 @@
-import { useState, useCallback, memo } from 'react';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { ActionCard } from '@/components/ui/action-card';
-import { PlaylistModal } from './playlist-modal';
-import { PlaylistList } from './playlist-list';
-import { usePlaylistStore } from '@/states/playlist-store';
+import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { usePlaylistStore } from '@/states/playlist-store';
+import { memo, useCallback, useState } from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { PlaylistList } from './playlist-list';
+import { PlaylistModal } from './playlist-modal';
 
 /**
  * Manages IPTV playlists with add, view, and error handling.
