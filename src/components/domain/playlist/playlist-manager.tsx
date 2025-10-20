@@ -1,8 +1,9 @@
 import { useState, useCallback, memo } from 'react';
-import { View, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { ActionCard } from '@/components/ui/action-card';
 import { PlaylistModal } from './playlist-modal';
 import { PlaylistList } from './playlist-list';
 import { usePlaylistStore } from '@/states/playlist-store';
@@ -31,28 +32,14 @@ export const PlaylistManager = memo(function PlaylistManager() {
 
   return (
     <ThemedView style={styles.container}>
-      <View style={styles.header}>
-        <View>
-          <ThemedText type="subtitle" style={styles.title}>
-            IPTV Playlists
-          </ThemedText>
-          <ThemedText style={styles.subtitle}>
-            {playlists.length} {playlists.length === 1 ? 'playlist' : 'playlists'}
-          </ThemedText>
-        </View>
-
-        <TouchableOpacity
-          style={styles.addButton}
+      <View style={styles.content}>
+        <ActionCard
+          icon="plus.circle"
+          title="Add Playlist"
           onPress={handleOpenModal}
-          disabled={isLoading}
-          accessibilityRole="button"
           accessibilityLabel="Add playlist"
           accessibilityHint="Open modal to add a new IPTV playlist"
-          accessibilityState={{ disabled: isLoading }}
-        >
-          <IconSymbol name="plus" size={20} color="#fff" />
-          <ThemedText style={styles.addButtonText}>Add</ThemedText>
-        </TouchableOpacity>
+        />
       </View>
 
       {error && (
@@ -80,35 +67,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  content: {
     padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#333',
-  },
-  title: {
-    fontSize: 24,
-  },
-  subtitle: {
-    fontSize: 14,
-    opacity: 0.7,
-    marginTop: 4,
-  },
-  addButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  addButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
   errorBanner: {
     flexDirection: 'row',

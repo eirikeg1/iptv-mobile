@@ -88,6 +88,21 @@ export function extractDomain(url: string): string {
 }
 
 /**
+ * Extract clean URL without query parameters for display purposes
+ * @param url - The URL to clean
+ * @returns The URL without query parameters, or original URL if parsing fails
+ * @example extractCleanUrl("https://example.com/playlist.m3u?token=123") => "example.com/playlist.m3u"
+ */
+export function extractCleanUrl(url: string): string {
+  try {
+    const urlObj = new URL(url);
+    return urlObj.hostname + urlObj.pathname;
+  } catch {
+    return url;
+  }
+}
+
+/**
  * Check if a URL is valid HTTP or HTTPS
  * @param url - The URL to validate
  * @returns True if valid HTTP/HTTPS URL, false otherwise

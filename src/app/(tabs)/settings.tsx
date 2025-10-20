@@ -19,17 +19,7 @@ export default function SettingsScreen() {
         />
       }
     >
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Settings</ThemedText>
-      </ThemedView>
-
       <ThemedView style={styles.section}>
-        <ThemedText type="subtitle" style={styles.sectionTitle}>
-          Playlist Management
-        </ThemedText>
-        <ThemedText style={styles.sectionDescription}>
-          Manage your IPTV playlists and channels
-        </ThemedText>
         <View style={styles.playlistContainer}>
           <PlaylistManager />
         </View>
@@ -45,20 +35,8 @@ const styles = StyleSheet.create({
     left: -35,
     position: 'absolute',
   },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 16,
-  },
   section: {
     marginBottom: 24,
-  },
-  sectionTitle: {
-    marginBottom: 8,
-  },
-  sectionDescription: {
-    opacity: 0.7,
-    marginBottom: 16,
   },
   playlistContainer: {
     minHeight: 400,

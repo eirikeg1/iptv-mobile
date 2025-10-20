@@ -1,11 +1,12 @@
-import { useCallback, memo } from 'react';
+import { useCallback, memo, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, FlatList, Alert } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { PlaylistModal } from './playlist-modal';
 import { usePlaylistStore } from '@/states/playlist-store';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { extractDomain, getTimeElapsed } from '@/lib/playlist-utils';
+import { extractCleanUrl, getTimeElapsed } from '@/lib/playlist-utils';
 import type { Playlist } from '@/types/playlist.types';
 
 /**
@@ -21,6 +22,19 @@ export const PlaylistList = memo(function PlaylistList() {
   const setActivePlaylist = usePlaylistStore((state) => state.setActivePlaylist);
   const removePlaylist = usePlaylistStore((state) => state.removePlaylist);
   const refreshPlaylist = usePlaylistStore((state) => state.refreshPlaylist);
+
+  const [editingPlaylist, setEditingPlaylist] = useState<Playlist | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  const handleEdit = useCallback((playlist: Playlist) => {
+    setEditingPlaylist(playlist);
+    setShowEditModal(true);
+  }, []);
+
+  const handleCloseEditModal = useCallback(() => {
+    setShowEditModal(false);
+    setEditingPlaylist(null);
+  }, []);
 
   const handleDelete = useCallback(
     (playlist: Playlist) => {
@@ -68,86 +82,72 @@ export const PlaylistList = memo(function PlaylistList() {
         {
           backgroundColor: isDark ? '#2a2a2a' : '#f5f5f5',
           borderColor: isActive ? '#007AFF' : isDark ? '#444' : '#ddd',
-          borderWidth: isActive ? 2 : 1,
         },
       ];
 
       return (
         <TouchableOpacity
           style={cardStyle}
-          onPress={() => setActivePlaylist(item.id)}
+          onPress={() => handleEdit(item)}
           accessibilityRole="button"
           accessibilityLabel={`${item.name} playlist`}
-          accessibilityHint={isActive ? 'Active playlist' : 'Tap to set as active playlist'}
+          accessibilityHint="Tap to edit this playlist"
           accessibilityState={{ selected: isActive }}
         >
-          <View style={styles.playlistHeader}>
+          <View style={styles.mainContent}>
             <View style={styles.playlistInfo}>
-              <ThemedText type="defaultSemiBold" style={styles.playlistName}>
-                {item.name}
-              </ThemedText>
-              <ThemedText style={styles.playlistUrl}>{extractDomain(item.url)}</ThemedText>
-            </View>
-
-            {isActive && (
-              <View style={styles.activeBadge}>
-                <ThemedText style={styles.activeBadgeText}>Active</ThemedText>
+              <View style={styles.nameRow}>
+                <ThemedText type="defaultSemiBold" style={styles.playlistName}>
+                  {item.name}
+                </ThemedText>
+                {isActive && (
+                  <View style={styles.activeIndicator} />
+                )}
               </View>
-            )}
-          </View>
-
-          <View style={styles.playlistDetails}>
-            <View style={styles.detailRow}>
-              <IconSymbol name="tv" size={16} color={isDark ? '#aaa' : '#666'} />
-              <ThemedText style={styles.detailText}>
-                {item.channelCount || 0} channels
-              </ThemedText>
-            </View>
-
-            {item.lastFetchedAt && (
-              <View style={styles.detailRow}>
-                <IconSymbol name="clock" size={16} color={isDark ? '#aaa' : '#666'} />
-                <ThemedText style={styles.detailText}>
-                  Updated {getTimeElapsed(item.lastFetchedAt)}
+              <View style={styles.metaRow}>
+                <IconSymbol name="tv" size={14} color={isDark ? '#888' : '#666'} />
+                <ThemedText style={styles.metaText}>
+                  {item.channelCount || 0}
+                </ThemedText>
+                <ThemedText style={styles.separator}>•</ThemedText>
+                <ThemedText style={[styles.metaText, styles.urlText]} numberOfLines={1} ellipsizeMode="tail">
+                  {extractCleanUrl(item.url)}
                 </ThemedText>
               </View>
-            )}
+            </View>
 
-            {item.credentials && (
-              <View style={styles.detailRow}>
-                <IconSymbol name="lock" size={16} color={isDark ? '#aaa' : '#666'} />
-                <ThemedText style={styles.detailText}>Authenticated</ThemedText>
-              </View>
-            )}
-          </View>
+            <View style={styles.playlistActions}>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  handleRefresh(item);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="Refresh playlist"
+                accessibilityHint="Re-fetch and update the playlist channels"
+              >
+                <IconSymbol name="arrow.clockwise" size={18} color={isDark ? '#888' : '#666'} />
+              </TouchableOpacity>
 
-          <View style={styles.playlistActions}>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => handleRefresh(item)}
-              accessibilityRole="button"
-              accessibilityLabel="Refresh playlist"
-              accessibilityHint="Re-fetch and update the playlist channels"
-            >
-              <IconSymbol name="arrow.clockwise" size={20} color="#007AFF" />
-              <ThemedText style={styles.actionText}>Refresh</ThemedText>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => handleDelete(item)}
-              accessibilityRole="button"
-              accessibilityLabel="Delete playlist"
-              accessibilityHint="Remove this playlist from your library"
-            >
-              <IconSymbol name="trash" size={20} color="#FF3B30" />
-              <ThemedText style={[styles.actionText, styles.deleteText]}>Delete</ThemedText>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  handleDelete(item);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="Delete playlist"
+                accessibilityHint="Remove this playlist from your library"
+              >
+                <IconSymbol name="trash" size={18} color="#FF3B30" />
+              </TouchableOpacity>
+            </View>
           </View>
         </TouchableOpacity>
       );
     },
-    [activePlaylistId, isDark, setActivePlaylist, handleRefresh, handleDelete]
+    [activePlaylistId, isDark, handleEdit, handleRefresh, handleDelete]
   );
 
   const keyExtractor = useCallback((item: Playlist) => item.id, []);
@@ -165,92 +165,85 @@ export const PlaylistList = memo(function PlaylistList() {
   }
 
   return (
-    <FlatList
-      data={playlists}
-      renderItem={renderPlaylistCard}
-      keyExtractor={keyExtractor}
-      contentContainerStyle={styles.listContainer}
-      scrollEnabled={false}
-      removeClippedSubviews
-      maxToRenderPerBatch={10}
-      windowSize={5}
-    />
+    <>
+      <FlatList
+        data={playlists}
+        renderItem={renderPlaylistCard}
+        keyExtractor={keyExtractor}
+        contentContainerStyle={styles.listContainer}
+        scrollEnabled={false}
+        removeClippedSubviews
+        maxToRenderPerBatch={10}
+        windowSize={5}
+      />
+      <PlaylistModal
+        visible={showEditModal}
+        onClose={handleCloseEditModal}
+        playlist={editingPlaylist || undefined}
+      />
+    </>
   );
 });
 
 const styles = StyleSheet.create({
   listContainer: {
     padding: 16,
-    gap: 12,
+    gap: 8,
   },
   playlistCard: {
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 8,
+    borderWidth: 1,
   },
-  playlistHeader: {
+  mainContent: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
+    gap: 12,
   },
   playlistInfo: {
     flex: 1,
+    gap: 4,
   },
-  playlistName: {
-    fontSize: 18,
-    marginBottom: 4,
-  },
-  playlistUrl: {
-    fontSize: 14,
-    opacity: 0.7,
-  },
-  activeBadge: {
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  activeBadgeText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  playlistDetails: {
-    gap: 8,
-    marginBottom: 12,
-  },
-  detailRow: {
+  nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  detailText: {
-    fontSize: 14,
-    opacity: 0.7,
+  playlistName: {
+    fontSize: 15,
   },
-  playlistActions: {
-    flexDirection: 'row',
-    gap: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#333',
+  activeIndicator: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#007AFF',
   },
-  actionButton: {
+  metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 6,
   },
-  actionText: {
-    fontSize: 14,
-    color: '#007AFF',
-    fontWeight: '600',
+  metaText: {
+    fontSize: 12,
+    opacity: 0.6,
   },
-  deleteText: {
-    color: '#FF3B30',
+  urlText: {
+    flex: 1,
+    flexShrink: 1,
+  },
+  separator: {
+    fontSize: 12,
+    opacity: 0.4,
+  },
+  playlistActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  actionButton: {
+    padding: 6,
   },
   emptyContainer: {
     flex: 1,

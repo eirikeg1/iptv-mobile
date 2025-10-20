@@ -13,19 +13,22 @@ import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { PlaylistForm } from './playlist-form';
+import type { Playlist } from '@/types/playlist.types';
 
 interface PlaylistModalProps {
   visible: boolean;
   onClose: () => void;
+  playlist?: Playlist;
 }
 
 /**
- * Modal for adding a new playlist with proper keyboard handling.
+ * Modal for adding or editing a playlist with proper keyboard handling.
  * Ensures input fields are never covered by the keyboard.
  */
-export const PlaylistModal = memo(function PlaylistModal({ visible, onClose }: PlaylistModalProps) {
+export const PlaylistModal = memo(function PlaylistModal({ visible, onClose, playlist }: PlaylistModalProps) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
+  const isEditing = !!playlist;
 
   return (
     <Modal
@@ -42,14 +45,14 @@ export const PlaylistModal = memo(function PlaylistModal({ visible, onClose }: P
         <View style={[styles.modalContent, { backgroundColor: isDark ? '#1a1a1a' : '#ffffff' }]}>
           <View style={[styles.header, { borderBottomColor: isDark ? '#333' : '#ddd' }]}>
             <ThemedText type="subtitle" style={styles.headerTitle}>
-              Add New Playlist
+              {isEditing ? 'Edit Playlist' : 'Add New Playlist'}
             </ThemedText>
             <TouchableOpacity
               onPress={onClose}
               style={styles.closeButton}
               accessibilityRole="button"
               accessibilityLabel="Close modal"
-              accessibilityHint="Close the add playlist modal"
+              accessibilityHint={`Close the ${isEditing ? 'edit' : 'add'} playlist modal`}
             >
               <IconSymbol name="xmark" size={24} color={isDark ? '#fff' : '#000'} />
             </TouchableOpacity>
@@ -61,7 +64,7 @@ export const PlaylistModal = memo(function PlaylistModal({ visible, onClose }: P
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={true}
           >
-            <PlaylistForm onSuccess={onClose} onCancel={onClose} />
+            <PlaylistForm onSuccess={onClose} onCancel={onClose} playlist={playlist} />
           </ScrollView>
         </View>
       </KeyboardAvoidingView>

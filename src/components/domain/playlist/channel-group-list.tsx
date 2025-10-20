@@ -1,8 +1,9 @@
 import { useCallback, memo, useMemo } from 'react';
-import { View, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import { View, StyleSheet, FlatList } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { ActionCard } from '@/components/ui/action-card';
 import { usePlaylistStore } from '@/states/playlist-store';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -42,51 +43,19 @@ export const ChannelGroupList = memo(function ChannelGroupList() {
 
   const renderGroupCard = useCallback(
     ({ item }: { item: ChannelGroup }) => {
-      const cardStyle = [
-        styles.groupCard,
-        {
-          backgroundColor: isDark ? '#2a2a2a' : '#f5f5f5',
-          borderColor: isDark ? '#444' : '#ddd',
-        },
-      ];
-
       return (
-        <TouchableOpacity
-          style={cardStyle}
+        <ActionCard
+          icon="folder"
+          title={item.title}
+          subtitle={`${item.channelCount} ${item.channelCount === 1 ? 'channel' : 'channels'}`}
+          subtitleIcon="tv"
           onPress={() => handleGroupPress(item)}
-          accessibilityRole="button"
           accessibilityLabel={`${item.title} group`}
           accessibilityHint={`View ${item.channelCount} channels in this group`}
-        >
-          <View style={styles.groupContent}>
-            <View style={[styles.groupIcon, { backgroundColor: isDark ? '#333' : '#e0e0e0' }]}>
-              <IconSymbol name="folder" size={32} color={isDark ? '#666' : '#999'} />
-            </View>
-
-            <View style={styles.groupInfo}>
-              <ThemedText type="defaultSemiBold" style={styles.groupTitle}>
-                {item.title}
-              </ThemedText>
-
-              <View style={styles.groupMeta}>
-                <IconSymbol name="tv" size={16} color={isDark ? '#aaa' : '#666'} />
-                <ThemedText style={styles.channelCount}>
-                  {item.channelCount} {item.channelCount === 1 ? 'channel' : 'channels'}
-                </ThemedText>
-              </View>
-            </View>
-
-            <IconSymbol
-              name="chevron.right"
-              size={24}
-              color={isDark ? '#666' : '#999'}
-              style={styles.chevronIcon}
-            />
-          </View>
-        </TouchableOpacity>
+        />
       );
     },
-    [isDark, handleGroupPress]
+    [handleGroupPress]
   );
 
   const keyExtractor = useCallback((item: ChannelGroup) => item.title, []);
@@ -133,43 +102,6 @@ const styles = StyleSheet.create({
   listContainer: {
     padding: 16,
     gap: 8,
-  },
-  groupCard: {
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-  },
-  groupContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-  },
-  groupIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  groupInfo: {
-    flex: 1,
-    gap: 8,
-  },
-  groupTitle: {
-    fontSize: 18,
-  },
-  groupMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  channelCount: {
-    fontSize: 14,
-    opacity: 0.7,
-  },
-  chevronIcon: {
-    marginLeft: 8,
   },
   emptyContainer: {
     flex: 1,

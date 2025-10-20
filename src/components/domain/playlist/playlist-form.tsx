@@ -1,33 +1,47 @@
-import { useState, useCallback, memo } from 'react';
+import { useState, useCallback, memo, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, ActivityIndicator, Switch } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { usePlaylistStore } from '@/states/playlist-store';
+import type { Playlist } from '@/types/playlist.types';
 
 interface PlaylistFormProps {
   onSuccess?: () => void;
   onCancel?: () => void;
+  playlist?: Playlist;
 }
 
 /**
- * Form for adding a new IPTV playlist with validation.
+ * Form for adding or editing an IPTV playlist with validation.
  * Supports optional authentication credentials.
  */
-export const PlaylistForm = memo(function PlaylistForm({ onSuccess, onCancel }: PlaylistFormProps) {
-  const [name, setName] = useState('');
-  const [url, setUrl] = useState('');
-  const [useCredentials, setUseCredentials] = useState(false);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+export const PlaylistForm = memo(function PlaylistForm({ onSuccess, onCancel, playlist }: PlaylistFormProps) {
+  const isEditing = !!playlist;
+  const [name, setName] = useState(playlist?.name || '');
+  const [url, setUrl] = useState(playlist?.url || '');
+  const [useCredentials, setUseCredentials] = useState(!!playlist?.credentials);
+  const [username, setUsername] = useState(playlist?.credentials?.username || '');
+  const [password, setPassword] = useState(playlist?.credentials?.password || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const addPlaylist = usePlaylistStore((state) => state.addPlaylist);
+  const updatePlaylist = usePlaylistStore((state) => state.updatePlaylist);
+
+  useEffect(() => {
+    if (playlist) {
+      setName(playlist.name);
+      setUrl(playlist.url);
+      setUseCredentials(!!playlist.credentials);
+      setUsername(playlist.credentials?.username || '');
+      setPassword(playlist.credentials?.password || '');
+    }
+  }, [playlist]);
 
   const handleSubmit = useCallback(async () => {
-    console.log('[PlaylistForm] Submit started');
+    console.log('[PlaylistForm] Submit started', { isEditing });
     setError(null);
 
     if (!name.trim()) {
@@ -57,32 +71,45 @@ export const PlaylistForm = memo(function PlaylistForm({ onSuccess, onCancel }: 
     setIsSubmitting(true);
 
     try {
-      await addPlaylist({
-        name: name.trim(),
-        url: url.trim(),
-        credentials: useCredentials
-          ? { username: username.trim(), password: password.trim() }
-          : undefined,
-      });
+      if (isEditing && playlist) {
+        await updatePlaylist(playlist.id, {
+          name: name.trim(),
+          url: url.trim(),
+          credentials: useCredentials
+            ? { username: username.trim(), password: password.trim() }
+            : undefined,
+        });
+        console.log('[PlaylistForm] Playlist updated successfully');
+      } else {
+        await addPlaylist({
+          name: name.trim(),
+          url: url.trim(),
+          credentials: useCredentials
+            ? { username: username.trim(), password: password.trim() }
+            : undefined,
+        });
+        console.log('[PlaylistForm] Playlist added successfully');
+      }
 
-      console.log('[PlaylistForm] Playlist added successfully, clearing form');
-      setName('');
-      setUrl('');
-      setUsername('');
-      setPassword('');
-      setUseCredentials(false);
+      if (!isEditing) {
+        setName('');
+        setUrl('');
+        setUsername('');
+        setPassword('');
+        setUseCredentials(false);
+      }
 
       onSuccess?.();
     } catch (err) {
-      console.error('[PlaylistForm] Error adding playlist:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to add playlist';
+      console.error('[PlaylistForm] Error:', err);
+      const errorMessage = err instanceof Error ? err.message : `Failed to ${isEditing ? 'update' : 'add'} playlist`;
       console.error('[PlaylistForm] Error message:', errorMessage);
       setError(errorMessage);
     } finally {
       setIsSubmitting(false);
       console.log('[PlaylistForm] Submit completed');
     }
-  }, [name, url, useCredentials, username, password, addPlaylist, onSuccess]);
+  }, [name, url, useCredentials, username, password, addPlaylist, updatePlaylist, onSuccess, isEditing, playlist]);
 
   return (
     <ThemedView style={styles.container}>
@@ -211,7 +238,7 @@ export const PlaylistForm = memo(function PlaylistForm({ onSuccess, onCancel }: 
           ]}
           onPress={handleSubmit}
           disabled={isSubmitting}
-          accessibilityLabel="Add playlist"
+          accessibilityLabel={isEditing ? 'Update playlist' : 'Add playlist'}
           accessibilityHint="Submit the playlist form"
           accessibilityRole="button"
           accessibilityState={{ disabled: isSubmitting }}
@@ -219,7 +246,9 @@ export const PlaylistForm = memo(function PlaylistForm({ onSuccess, onCancel }: 
           {isSubmitting ? (
             <ActivityIndicator color="#fff" accessibilityLabel="Loading" />
           ) : (
-            <ThemedText style={styles.submitButtonText}>Add Playlist</ThemedText>
+            <ThemedText style={styles.submitButtonText}>
+              {isEditing ? 'Update Playlist' : 'Add Playlist'}
+            </ThemedText>
           )}
         </TouchableOpacity>
       </View>
