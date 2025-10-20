@@ -33,6 +33,7 @@ export const PlaylistManager = memo(function PlaylistManager() {
   return (
     <ThemedView style={styles.container}>
       <View style={styles.content}>
+        <ThemedText type="subtitle" style={styles.header}>Playlist Management</ThemedText>
         <ActionCard
           icon="plus.circle"
           title="Add Playlist"
@@ -41,6 +42,8 @@ export const PlaylistManager = memo(function PlaylistManager() {
           accessibilityHint="Open modal to add a new IPTV playlist"
         />
       </View>
+
+      <View style={[styles.separator, { backgroundColor: isDark ? '#333' : '#ddd' }]} />
 
       {error && (
         <View style={[styles.errorBanner, { backgroundColor: isDark ? '#4a1a1a' : '#fee' }]}>
@@ -69,6 +72,14 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 16,
+  },
+  header: {
+    marginBottom: 12,
+  },
+  separator: {
+    height: 1,
+    marginHorizontal: 16,
+    marginBottom: 16,
   },
   errorBanner: {
     flexDirection: 'row',

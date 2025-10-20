@@ -1,18 +1,29 @@
 import { ThemedText } from '@/components/themed-text';
-import { ReactNode } from 'react';
+import { Children, cloneElement, isValidElement, ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 interface VideoPreviewGridProps {
   children: ReactNode[];
   title?: string;
+  columns?: number;
 }
 
-export function VideoPreviewGrid({ title, children }: VideoPreviewGridProps) {
+export function VideoPreviewGrid({ title, children, columns = 3 }: VideoPreviewGridProps) {
+  // Calculate item width based on columns
+  // Account for gaps: total gap space = (columns - 1) * 8
+  const gapPerItem = ((columns - 1) * 8) / columns;
+  const itemWidthPercent = `${(100 / columns) - (gapPerItem / 100 * 100)}%`;
+
   return (
     <View style={styles.container}>
       {title && <ThemedText type="title">{title}</ThemedText>}
       <View style={styles.grid}>
-        {children}
+        {Children.map(children, (child) => {
+          if (isValidElement(child)) {
+            return cloneElement(child, { width: itemWidthPercent } as any);
+          }
+          return child;
+        })}
       </View>
     </View>
   );

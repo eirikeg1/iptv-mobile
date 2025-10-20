@@ -3,11 +3,12 @@ import { StyleSheet, Text, View } from 'react-native';
 
 interface VideoGridItemProps {
   displayIndex: number;
+  width?: string | number;
 }
 
-export function VideoGridItem({ displayIndex }: VideoGridItemProps) {
+export function VideoGridItem({ displayIndex, width }: VideoGridItemProps) {
   return (
-    <View style={styles.gridItem}>
+    <View style={[styles.gridItem, width ? { width } : undefined]}>
       <LinearGradient
         colors={['rgba(0,0,0,0.3)', 'transparent']}
         start={{ x: 0, y: 0.5 }}
