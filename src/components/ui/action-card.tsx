@@ -1,14 +1,14 @@
 import { memo } from 'react';
 import { View, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
-import { IconSymbol, SymbolName } from '@/components/ui/icon-symbol';
+import { IconSymbol, IconSymbolName } from '@/components/ui/icon-symbol';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export interface ActionCardProps {
   /**
    * Main icon displayed on the left side of the card
    */
-  icon?: SymbolName;
+  icon?: IconSymbolName;
 
   /**
    * Title text of the card
@@ -23,7 +23,7 @@ export interface ActionCardProps {
   /**
    * Optional icon displayed next to the subtitle
    */
-  subtitleIcon?: SymbolName;
+  subtitleIcon?: IconSymbolName;
 
   /**
    * Callback when the card is pressed

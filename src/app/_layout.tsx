@@ -10,22 +10,20 @@ import '../global.css';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { usePlaylistInit } from '@/hooks/use-playlist-init';
 
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
-
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
-  // Initialize playlists on app load
+  // Initialize playlists and users on app load
   usePlaylistInit();
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <GestureHandlerRootView>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="user-select" />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="modal" options={{ presentation: 'modal', headerShown: true, title: 'Modal' }} />
         </Stack>
         <StatusBar style="auto" />
         <PortalHost />

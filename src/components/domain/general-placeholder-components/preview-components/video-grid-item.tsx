@@ -1,9 +1,9 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { StyleSheet, Text, View } from 'react-native';
+import { DimensionValue, StyleSheet, Text, View } from 'react-native';
 
 interface VideoGridItemProps {
   displayIndex: number;
-  width?: string | number;
+  width?: DimensionValue;
 }
 
 export function VideoGridItem({ displayIndex, width }: VideoGridItemProps) {

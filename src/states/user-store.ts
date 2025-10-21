@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import type { User, UserSettings, CreateUserInput, UpdateUserInput } from '@/types/user.types';
 import { userRepository } from '@/db/user-repository';
+import type { CreateUserInput, UpdateUserInput, User, UserSettings } from '@/types/user.types';
+import { create } from 'zustand';
 
 interface UserState {
   // State
@@ -15,7 +15,6 @@ interface UserState {
   switchUser: (userId: string) => Promise<void>;
   updateUser: (userId: string, updates: UpdateUserInput) => Promise<void>;
   deleteUser: (userId: string) => Promise<void>;
-  ensureDefaultUser: () => Promise<void>;
 
   // Settings actions
   updateSettings: (userId: string, settings: Partial<UserSettings>) => Promise<void>;
@@ -46,7 +45,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   // Initial state
   users: [],
   currentUser: null,
-  isLoading: false,
+  isLoading: true, // Start as true until users are loaded
   error: null,
 
   // Load all users from database
@@ -198,34 +197,6 @@ export const useUserStore = create<UserState>((set, get) => ({
     }
   },
 
-  // Ensure at least one default user exists
-  ensureDefaultUser: async () => {
-    console.log('[UserStore] ensureDefaultUser called');
-
-    try {
-      const users = await userRepository.getAllUsers();
-
-      if (users.length === 0) {
-        console.log('[UserStore] No users found, creating default user');
-        const defaultUser = await userRepository.createUser(
-          { username: 'Default User' },
-          true
-        );
-
-        set({
-          users: [defaultUser],
-          currentUser: defaultUser,
-        });
-
-        console.log('[UserStore] Default user created');
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to ensure default user';
-      console.error('[UserStore] Error ensuring default user:', errorMessage);
-      set({ error: errorMessage });
-      throw error;
-    }
-  },
 
   // Update user settings
   updateSettings: async (userId: string, settings: Partial<UserSettings>) => {

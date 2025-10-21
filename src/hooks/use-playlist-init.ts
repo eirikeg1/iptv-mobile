@@ -10,7 +10,6 @@ import { initializeDatabase } from '@/db/migrations';
 export function usePlaylistInit() {
   const loadPlaylists = usePlaylistStore((state) => state.loadPlaylists);
   const loadUsers = useUserStore((state) => state.loadUsers);
-  const ensureDefaultUser = useUserStore((state) => state.ensureDefaultUser);
 
   useEffect(() => {
     const init = async () => {
@@ -20,10 +19,9 @@ export function usePlaylistInit() {
         await initializeDatabase();
         console.log('[App] Database initialized successfully');
 
-        // Load and ensure users exist
+        // Load users
         console.log('[App] Loading users...');
         await loadUsers();
-        await ensureDefaultUser();
         console.log('[App] Users loaded successfully');
 
         // Load playlists from database
@@ -36,5 +34,5 @@ export function usePlaylistInit() {
     };
 
     init();
-  }, [loadPlaylists, loadUsers, ensureDefaultUser]);
+  }, [loadPlaylists, loadUsers]);
 }

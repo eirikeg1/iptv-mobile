@@ -1,10 +1,10 @@
 import { StyleSheet, View } from 'react-native';
 
 import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { PlaylistManager } from '@/components/domain/playlist';
+import { UserSettings } from '@/components/domain/user/user-settings';
 
 export default function SettingsScreen() {
   return (
@@ -19,6 +19,12 @@ export default function SettingsScreen() {
         />
       }
     >
+      {/* User Settings Section */}
+      <ThemedView style={styles.section}>
+        <UserSettings />
+      </ThemedView>
+
+      {/* Playlist Management Section */}
       <ThemedView style={styles.section}>
         <View style={styles.playlistContainer}>
           <PlaylistManager />
