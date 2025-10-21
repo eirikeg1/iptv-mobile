@@ -1,11 +1,10 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { ActionCard } from '@/components/ui/action-card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useUserStore } from '@/states/user-store';
 import { router } from 'expo-router';
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback } from 'react';
 import { StyleSheet, View, Switch, Alert, Pressable } from 'react-native';
 
 /**
@@ -18,7 +17,6 @@ export const UserSettings = memo(function UserSettings() {
   const currentUser = useUserStore((state) => state.currentUser);
   const users = useUserStore((state) => state.users);
   const updateSettings = useUserStore((state) => state.updateSettings);
-  const switchUser = useUserStore((state) => state.switchUser);
 
   const settings = currentUser?.settings;
 
@@ -53,16 +51,7 @@ export const UserSettings = memo(function UserSettings() {
           Profile
         </ThemedText>
 
-        <Pressable
-          onPress={handleSwitchUser}
-          style={({ pressed }) => [
-            styles.userCard,
-            {
-              backgroundColor: isDark ? '#1a1a1a' : '#f9f9f9',
-              opacity: pressed ? 0.7 : 1,
-            },
-          ]}
-        >
+        <View style={styles.userCard}>
           <View style={[styles.avatar, { backgroundColor: '#007AFF' }]}>
             <ThemedText style={styles.avatarText}>
               {currentUser.username
@@ -75,21 +64,25 @@ export const UserSettings = memo(function UserSettings() {
           </View>
           <View style={styles.userInfo}>
             <ThemedText style={styles.username}>{currentUser.username}</ThemedText>
-            {currentUser.isPrimary && (
-              <ThemedText style={styles.badge}>Primary Profile</ThemedText>
-            )}
           </View>
-          <IconSymbol name="chevron.right" size={20} color="#888" />
-        </Pressable>
-
-        {users.length > 1 && (
-          <ActionCard
-            icon="person.2"
-            title={`Switch Profile (${users.length} total)`}
-            onPress={handleSwitchUser}
-            accessibilityLabel="Switch user profile"
-          />
-        )}
+          {users.length > 1 && (
+            <Pressable
+              onPress={handleSwitchUser}
+              style={({ pressed }) => [
+                styles.switchTouchable,
+                {
+                  opacity: pressed ? 0.7 : 1,
+                },
+              ]}
+              accessibilityLabel="Switch user profile"
+            >
+              <View style={[styles.switchButton, { backgroundColor: isDark ? '#2a2a2a' : '#f0f0f0' }]}>
+                <IconSymbol name="person.2" size={16} color={isDark ? '#fff' : '#666'} />
+                <ThemedText style={styles.switchButtonText}>Switch</ThemedText>
+              </View>
+            </Pressable>
+          )}
+        </View>
       </View>
 
       <View style={[styles.separator, { backgroundColor: isDark ? '#333' : '#ddd' }]} />
@@ -208,6 +201,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 12,
     gap: 12,
+    backgroundColor: 'transparent',
   },
   avatar: {
     width: 48,
@@ -229,9 +223,22 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 2,
   },
-  badge: {
-    fontSize: 13,
-    opacity: 0.6,
+  switchTouchable: {
+    padding: 8,
+    margin: -8,
+  },
+  switchButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    gap: 6,
+  },
+  switchButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    opacity: 0.8,
   },
   settingsList: {
     gap: 0,

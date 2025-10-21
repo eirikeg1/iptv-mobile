@@ -20,8 +20,7 @@ export interface IUserRepository {
   // User CRUD operations
   getAllUsers(): Promise<User[]>;
   getUserById(id: string): Promise<User | null>;
-  getPrimaryUser(): Promise<User | null>;
-  createUser(input: CreateUserInput, isPrimary?: boolean): Promise<User>;
+  createUser(input: CreateUserInput): Promise<User>;
   updateUser(id: string, updates: UpdateUserInput): Promise<User>;
   deleteUser(id: string): Promise<void>;
   updateLastActive(id: string): Promise<void>;
@@ -65,7 +64,6 @@ interface UserRow {
   id: string;
   username: string;
   avatarUrl: string | null;
-  isPrimary: number;
   pin: string | null;
   createdAt: string;
   updatedAt: string;
@@ -135,7 +133,7 @@ class SQLiteUserRepository implements IUserRepository {
       id: row.id,
       username: row.username,
       avatarUrl: row.avatarUrl || undefined,
-      isPrimary: row.isPrimary === 1,
+      isPrimary: false,
       pin: row.pin || undefined,
       createdAt: new Date(row.createdAt),
       updatedAt: new Date(row.updatedAt),
@@ -165,7 +163,7 @@ class SQLiteUserRepository implements IUserRepository {
   async getAllUsers(): Promise<User[]> {
     console.log('[UserRepository] getAllUsers called');
     const rows = await executeQuery<UserRow>(
-      'SELECT * FROM users ORDER BY isPrimary DESC, createdAt ASC'
+      'SELECT * FROM users ORDER BY createdAt ASC'
     );
 
     const users = await Promise.all(
@@ -195,23 +193,9 @@ class SQLiteUserRepository implements IUserRepository {
     return this.rowToUser(row, settings || undefined);
   }
 
-  async getPrimaryUser(): Promise<User | null> {
-    console.log('[UserRepository] getPrimaryUser called');
-    const row = await executeQuerySingle<UserRow>(
-      'SELECT * FROM users WHERE isPrimary = 1'
-    );
 
-    if (!row) {
-      console.log('[UserRepository] No primary user found');
-      return null;
-    }
-
-    const settings = await this.getUserSettings(row.id);
-    return this.rowToUser(row, settings || undefined);
-  }
-
-  async createUser(input: CreateUserInput, isPrimary: boolean = false): Promise<User> {
-    console.log('[UserRepository] createUser called:', { username: input.username, isPrimary });
+  async createUser(input: CreateUserInput): Promise<User> {
+    console.log('[UserRepository] createUser called:', { username: input.username });
 
     const now = new Date().toISOString();
     const userId = randomUUID();
@@ -219,13 +203,12 @@ class SQLiteUserRepository implements IUserRepository {
     await executeTransaction(async (tx) => {
       // Insert user
       await tx.runAsync(
-        `INSERT INTO users (id, username, avatarUrl, isPrimary, pin, createdAt, updatedAt, lastActiveAt)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO users (id, username, avatarUrl, pin, createdAt, updatedAt, lastActiveAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
           userId,
           input.username,
           input.avatarUrl || null,
-          isPrimary ? 1 : 0,
           input.pin || null,
           now,
           now,

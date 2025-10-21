@@ -5,7 +5,6 @@ export interface User {
   id: string;
   username: string;
   avatarUrl?: string;
-  isPrimary: boolean;
   pin?: string;
   createdAt: Date;
   updatedAt: Date;

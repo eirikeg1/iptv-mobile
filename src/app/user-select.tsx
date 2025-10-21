@@ -1,9 +1,9 @@
 import { AddUserCard, UserProfileCard } from '@/components/domain/user/user-profile-card';
 import { useUserStore } from '@/states/user-store';
-import type { User } from '@/types/user.types';
+import type { User, UpdateUserInput } from '@/types/user.types';
 import { router } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, ScrollView, Text, TextInput, View, KeyboardAvoidingView, Platform } from 'react-native';
 
 // Constants
 const PLACEHOLDER_COLOR = '#9CA3AF';
@@ -29,6 +29,7 @@ interface UserSelectionScreenProps {
   currentUserId?: string;
   onSelectUser: (userId: string) => void;
   onAddUser: () => void;
+  onEditUser: () => void;
   onBack: () => void;
 }
 
@@ -37,60 +38,68 @@ interface UserSelectionScreenProps {
  */
 function FirstUserScreen({ username, isCreating, onUsernameChange, onSubmit }: UserFormProps) {
   return (
-    <View className="flex-1 bg-white dark:bg-gray-950 justify-center">
-      <View className="px-8">
-        <View className="mb-12">
-          <Text className="text-5xl font-bold text-center mb-4 text-gray-900 dark:text-white">
-            Welcome!
-          </Text>
-          <Text className="text-lg text-center text-gray-600 dark:text-gray-400">
-            Let's create your profile to get started
-          </Text>
-        </View>
+    <KeyboardAvoidingView
+      className="flex-1 bg-white dark:bg-gray-950"
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View className="px-8">
+          <View className="mb-12">
+            <Text className="text-5xl font-bold text-center mb-4 text-gray-900 dark:text-white">
+              Welcome!
+            </Text>
+            <Text className="text-lg text-center text-gray-600 dark:text-gray-400">
+              Let's create your profile to get started
+            </Text>
+          </View>
 
-        <View className="items-center mb-8">
-          <View className="w-32 h-32 rounded-full bg-blue-600 items-center justify-center">
-            <Text className="text-6xl">{PROFILE_ICON}</Text>
+          <View className="items-center mb-8">
+            <View className="w-32 h-32 rounded-full bg-blue-600 items-center justify-center">
+              <Text className="text-6xl">{PROFILE_ICON}</Text>
+            </View>
+          </View>
+
+          <View className="max-w-md w-full mx-auto">
+            <Text className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">
+              Your Name
+            </Text>
+
+            <TextInput
+              className="bg-gray-100 dark:bg-gray-800 px-5 py-4 rounded-xl text-lg text-gray-900 dark:text-white mb-6 border border-gray-200 dark:border-gray-700"
+              placeholder="Enter your name"
+              placeholderTextColor={PLACEHOLDER_COLOR}
+              value={username}
+              onChangeText={onUsernameChange}
+              autoFocus
+              editable={!isCreating}
+              returnKeyType="done"
+              onSubmitEditing={onSubmit}
+            />
+
+            <Pressable
+              onPress={onSubmit}
+              disabled={isCreating || !username.trim()}
+              className="bg-blue-600 py-4 rounded-xl disabled:opacity-50"
+              accessibilityRole="button"
+              accessibilityLabel="Create profile and continue"
+            >
+              <Text className="text-center text-lg font-semibold text-white">
+                {isCreating ? 'Creating Profile...' : 'Continue'}
+              </Text>
+            </Pressable>
+          </View>
+
+          <View className="mt-12">
+            <Text className="text-center text-sm text-gray-500 dark:text-gray-400">
+              You can add more profiles later in settings
+            </Text>
           </View>
         </View>
-
-        <View className="max-w-md w-full mx-auto">
-          <Text className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">
-            Your Name
-          </Text>
-
-          <TextInput
-            className="bg-gray-100 dark:bg-gray-800 px-5 py-4 rounded-xl text-lg text-gray-900 dark:text-white mb-6 border border-gray-200 dark:border-gray-700"
-            placeholder="Enter your name"
-            placeholderTextColor={PLACEHOLDER_COLOR}
-            value={username}
-            onChangeText={onUsernameChange}
-            autoFocus
-            editable={!isCreating}
-            returnKeyType="done"
-            onSubmitEditing={onSubmit}
-          />
-
-          <Pressable
-            onPress={onSubmit}
-            disabled={isCreating || !username.trim()}
-            className="bg-blue-600 py-4 rounded-xl disabled:opacity-50"
-            accessibilityRole="button"
-            accessibilityLabel="Create profile and continue"
-          >
-            <Text className="text-center text-lg font-semibold text-white">
-              {isCreating ? 'Creating Profile...' : 'Continue'}
-            </Text>
-          </Pressable>
-        </View>
-
-        <View className="mt-12">
-          <Text className="text-center text-sm text-gray-500 dark:text-gray-400">
-            You can add more profiles later in settings
-          </Text>
-        </View>
-      </View>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -120,6 +129,7 @@ function UserSelectionScreen({
   currentUserId,
   onSelectUser,
   onAddUser,
+  onEditUser,
   onBack,
 }: UserSelectionScreenProps) {
   return (
@@ -147,16 +157,28 @@ function UserSelectionScreen({
         </View>
 
         <View className="items-center mt-8">
-          <Pressable
-            onPress={onBack}
-            className="px-6 py-3 border border-gray-300 dark:border-gray-700 rounded-lg"
-            accessibilityRole="button"
-            accessibilityLabel="Back to settings"
-          >
-            <Text className="text-base font-medium text-gray-700 dark:text-gray-300">
-              Back to Settings
-            </Text>
-          </Pressable>
+          <View className="flex-row gap-4">
+            <Pressable
+              onPress={onBack}
+              className="px-6 py-3 border border-gray-300 dark:border-gray-700 rounded-lg"
+              accessibilityRole="button"
+              accessibilityLabel="Back to settings"
+            >
+              <Text className="text-base font-medium text-gray-700 dark:text-gray-300">
+                Back to Settings
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={onEditUser}
+              className="px-6 py-3 bg-blue-600 rounded-lg"
+              accessibilityRole="button"
+              accessibilityLabel="Edit profiles"
+            >
+              <Text className="text-base font-medium text-white">
+                Edit
+              </Text>
+            </Pressable>
+          </View>
         </View>
       </View>
     </ScrollView>
@@ -168,7 +190,11 @@ function UserSelectionScreen({
  */
 function CreateUserModal({ username, isCreating, onUsernameChange, onSubmit, onCancel }: UserFormProps) {
   return (
-    <View className="absolute inset-0 bg-black/80 justify-center items-center px-8">
+    <KeyboardAvoidingView
+      className="absolute inset-0 bg-black/80"
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 }}
+    >
       <View className="bg-white dark:bg-gray-900 rounded-2xl p-8 w-full max-w-md">
         <Text className="text-2xl font-bold mb-6 text-gray-900 dark:text-white text-center">
           Create New Profile
@@ -220,6 +246,193 @@ function CreateUserModal({ username, isCreating, onUsernameChange, onSubmit, onC
           </Pressable>
         </View>
       </View>
+    </KeyboardAvoidingView>
+  );
+}
+
+/**
+ * Modal for editing user profiles with username change and delete functionality
+ */
+function EditUserModal({
+  users,
+  onUpdateUser,
+  onDeleteUser,
+  onCancel
+}: {
+  users: User[];
+  onUpdateUser: (userId: string, updates: UpdateUserInput) => Promise<void>;
+  onDeleteUser: (userId: string) => Promise<void>;
+  onCancel: () => void;
+}) {
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [newUsername, setNewUsername] = useState('');
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleEditUser = (user: User) => {
+    setEditingUser(user);
+    setNewUsername(user.username);
+  };
+
+  const handleUpdateUser = async () => {
+    if (!editingUser || !newUsername.trim()) return;
+
+    setIsUpdating(true);
+    try {
+      await onUpdateUser(editingUser.id, { username: newUsername.trim() });
+      setEditingUser(null);
+      setNewUsername('');
+    } catch (error) {
+      console.error('Failed to update user:', error);
+      Alert.alert('Error', 'Failed to update user. Please try again.');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleDeleteUser = async (user: User) => {
+    Alert.alert(
+      'Delete Profile',
+      `Are you sure you want to delete "${user.username}"? This action cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await onDeleteUser(user.id);
+            } catch (error) {
+              console.error('Failed to delete user:', error);
+              Alert.alert('Error', 'Failed to delete user. Please try again.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  if (editingUser) {
+    return (
+      <KeyboardAvoidingView
+        className="absolute inset-0 bg-black/80"
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 }}
+      >
+        <View className="bg-white dark:bg-gray-900 rounded-2xl p-8 w-full max-w-md">
+          <Text className="text-2xl font-bold mb-6 text-gray-900 dark:text-white text-center">
+            Edit Profile
+          </Text>
+
+          <View className="items-center mb-6">
+            <View className="w-24 h-24 rounded-full bg-blue-600 items-center justify-center">
+              <Text className="text-5xl">{PROFILE_ICON}</Text>
+            </View>
+          </View>
+
+          <Text className="text-base font-semibold mb-3 text-gray-900 dark:text-white">Name</Text>
+
+          <TextInput
+            className="bg-gray-100 dark:bg-gray-800 px-4 py-3 rounded-xl text-base text-gray-900 dark:text-white mb-6 border border-gray-200 dark:border-gray-700"
+            placeholder="Enter name"
+            placeholderTextColor={PLACEHOLDER_COLOR}
+            value={newUsername}
+            onChangeText={setNewUsername}
+            autoFocus
+            editable={!isUpdating}
+            returnKeyType="done"
+            onSubmitEditing={handleUpdateUser}
+          />
+
+          <View className="flex-row gap-3">
+            <Pressable
+              onPress={() => setEditingUser(null)}
+              disabled={isUpdating}
+              className="flex-1 bg-gray-200 dark:bg-gray-700 py-3 rounded-xl disabled:opacity-50"
+              accessibilityRole="button"
+              accessibilityLabel="Cancel editing"
+            >
+              <Text className="text-center text-base font-semibold text-gray-900 dark:text-white">
+                Cancel
+              </Text>
+            </Pressable>
+
+            <Pressable
+              onPress={handleUpdateUser}
+              disabled={isUpdating || !newUsername.trim()}
+              className="flex-1 bg-blue-600 py-3 rounded-xl disabled:opacity-50"
+              accessibilityRole="button"
+              accessibilityLabel="Save changes"
+            >
+              <Text className="text-center text-base font-semibold text-white">
+                {isUpdating ? 'Saving...' : 'Save'}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
+    );
+  }
+
+  return (
+    <View className="absolute inset-0 bg-black/80 justify-center items-center px-8">
+      <View className="bg-white dark:bg-gray-900 rounded-2xl p-8 w-full max-w-md max-h-[80%]">
+        <Text className="text-2xl font-bold mb-6 text-gray-900 dark:text-white text-center">
+          Edit Profiles
+        </Text>
+
+        <ScrollView className="mb-6" showsVerticalScrollIndicator={false}>
+          {users.map((user) => (
+            <View key={user.id} className="flex-row items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700">
+              <View className="flex-row items-center flex-1">
+                <View className="w-12 h-12 rounded-full bg-blue-600 items-center justify-center mr-3">
+                  <Text className="text-white font-bold">
+                    {user.username
+                      .split(' ')
+                      .map((n) => n[0])
+                      .join('')
+                      .toUpperCase()
+                      .slice(0, 2)}
+                  </Text>
+                </View>
+                <Text className="text-base font-medium text-gray-900 dark:text-white flex-1">
+                  {user.username}
+                </Text>
+              </View>
+              <View className="flex-row gap-2">
+                <Pressable
+                  onPress={() => handleEditUser(user)}
+                  className="px-3 py-2 bg-blue-600 rounded-lg"
+                  accessibilityRole="button"
+                  accessibilityLabel={`Edit ${user.username}`}
+                >
+                  <Text className="text-sm font-medium text-white">Edit</Text>
+                </Pressable>
+                {users.length > 1 && (
+                  <Pressable
+                    onPress={() => handleDeleteUser(user)}
+                    className="px-3 py-2 bg-red-600 rounded-lg"
+                    accessibilityRole="button"
+                    accessibilityLabel={`Delete ${user.username}`}
+                  >
+                    <Text className="text-sm font-medium text-white">Delete</Text>
+                  </Pressable>
+                )}
+              </View>
+            </View>
+          ))}
+        </ScrollView>
+
+        <Pressable
+          onPress={onCancel}
+          className="bg-gray-200 dark:bg-gray-700 py-3 rounded-xl"
+          accessibilityRole="button"
+          accessibilityLabel="Close edit profiles"
+        >
+          <Text className="text-center text-base font-semibold text-gray-900 dark:text-white">
+            Done
+          </Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -233,11 +446,14 @@ export default function UserSelectScreen() {
   const currentUser = useUserStore((state) => state.currentUser);
   const switchUser = useUserStore((state) => state.switchUser);
   const createUser = useUserStore((state) => state.createUser);
+  const updateUser = useUserStore((state) => state.updateUser);
+  const deleteUser = useUserStore((state) => state.deleteUser);
 
   // Local state
   const [newUsername, setNewUsername] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const isFirstUser = users.length === 0;
 
@@ -304,6 +520,29 @@ export default function UserSelectScreen() {
     router.back();
   }, []);
 
+  const handleEditUser = useCallback(() => {
+    setShowEditModal(true);
+  }, []);
+
+  const handleUpdateUser = useCallback(async (userId: string, updates: UpdateUserInput) => {
+    await updateUser(userId, updates);
+  }, [updateUser]);
+
+  const handleDeleteUser = useCallback(async (userId: string) => {
+    // If deleting current user, switch to another user first
+    if (userId === currentUser?.id && users.length > 1) {
+      const otherUser = users.find(u => u.id !== userId);
+      if (otherUser) {
+        await switchUser(otherUser.id);
+      }
+    }
+    await deleteUser(userId);
+  }, [deleteUser, currentUser?.id, users, switchUser]);
+
+  const handleCancelEdit = useCallback(() => {
+    setShowEditModal(false);
+  }, []);
+
   // Render first-time user creation screen
   if (isFirstUser) {
     return (
@@ -324,6 +563,7 @@ export default function UserSelectScreen() {
         currentUserId={currentUser?.id}
         onSelectUser={handleSelectUser}
         onAddUser={handleAddUserPress}
+        onEditUser={handleEditUser}
         onBack={handleBack}
       />
 
@@ -334,6 +574,15 @@ export default function UserSelectScreen() {
           onUsernameChange={setNewUsername}
           onSubmit={handleCreateUser}
           onCancel={handleCancelCreate}
+        />
+      )}
+
+      {showEditModal && (
+        <EditUserModal
+          users={users}
+          onUpdateUser={handleUpdateUser}
+          onDeleteUser={handleDeleteUser}
+          onCancel={handleCancelEdit}
         />
       )}
     </View>

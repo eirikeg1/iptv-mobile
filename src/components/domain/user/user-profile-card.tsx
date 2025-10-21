@@ -49,13 +49,6 @@ export function UserProfileCard({ user, onPress }: UserProfileCardProps) {
       <Text className="text-lg font-semibold text-gray-900 dark:text-gray-100">
         {user.username}
       </Text>
-      {user.isPrimary && (
-        <View className="mt-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900 rounded-full">
-          <Text className="text-xs font-medium text-blue-800 dark:text-blue-200">
-            Primary
-          </Text>
-        </View>
-      )}
     </Pressable>
   );
 }

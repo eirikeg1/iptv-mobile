@@ -57,16 +57,16 @@ export const useUserStore = create<UserState>((set, get) => ({
       const users = await userRepository.getAllUsers();
       console.log('[UserStore] Loaded users:', users.length);
 
-      // Set current user to primary user if exists
-      const primaryUser = users.find(u => u.isPrimary) || users[0] || null;
+      // Set current user to first user if exists
+      const firstUser = users[0] || null;
 
-      if (primaryUser) {
-        await userRepository.updateLastActive(primaryUser.id);
+      if (firstUser) {
+        await userRepository.updateLastActive(firstUser.id);
       }
 
       set({
         users,
-        currentUser: primaryUser,
+        currentUser: firstUser,
         isLoading: false,
       });
     } catch (error) {
@@ -84,15 +84,14 @@ export const useUserStore = create<UserState>((set, get) => ({
 
     try {
       const { users } = get();
-      const isPrimary = users.length === 0; // First user is primary
 
-      const newUser = await userRepository.createUser(input, isPrimary);
+      const newUser = await userRepository.createUser(input);
       console.log('[UserStore] User created:', newUser.id);
 
       const updatedUsers = [...users, newUser];
       set({
         users: updatedUsers,
-        currentUser: isPrimary ? newUser : get().currentUser,
+        currentUser: users.length === 0 ? newUser : get().currentUser,
         isLoading: false,
       });
 
@@ -165,11 +164,6 @@ export const useUserStore = create<UserState>((set, get) => ({
 
     try {
       const { users, currentUser } = get();
-      const userToDelete = users.find(u => u.id === userId);
-
-      if (userToDelete?.isPrimary && users.length > 1) {
-        throw new Error('Cannot delete primary user when other users exist');
-      }
 
       await userRepository.deleteUser(userId);
 

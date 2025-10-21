@@ -181,6 +181,40 @@ const migrations: Migration[] = [
       `);
     },
   },
+  {
+    version: 3,
+    name: 'remove_primary_user_concept',
+    up: async (db) => {
+      // SQLite doesn't support DROP COLUMN directly, so we need to recreate the table
+
+      // Create new users table without isPrimary column
+      await db.execAsync(`
+        CREATE TABLE users_new (
+          id TEXT PRIMARY KEY NOT NULL,
+          username TEXT NOT NULL,
+          avatarUrl TEXT,
+          pin TEXT,
+          createdAt TEXT NOT NULL,
+          updatedAt TEXT NOT NULL,
+          lastActiveAt TEXT
+        );
+      `);
+
+      // Copy data from old table to new table (excluding isPrimary)
+      await db.execAsync(`
+        INSERT INTO users_new (id, username, avatarUrl, pin, createdAt, updatedAt, lastActiveAt)
+        SELECT id, username, avatarUrl, pin, createdAt, updatedAt, lastActiveAt FROM users;
+      `);
+
+      // Drop old table
+      await db.execAsync(`DROP TABLE users;`);
+
+      // Rename new table to original name
+      await db.execAsync(`ALTER TABLE users_new RENAME TO users;`);
+
+      console.log('[Migration] Removed isPrimary column from users table');
+    },
+  },
 ];
 
 /**
