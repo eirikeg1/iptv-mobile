@@ -4,7 +4,7 @@ import { useUserStore } from '@/states/user-store';
 import type { User, UpdateUserInput } from '@/types/user.types';
 import { router } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
 // Constants
 const PLACEHOLDER_COLOR = '#9CA3AF';
