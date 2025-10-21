@@ -16,12 +16,14 @@ const HEADER_HEIGHT = 250;
 type Props = PropsWithChildren<{
   headerImage: ReactElement;
   headerBackgroundColor: { dark: string; light: string };
+  stickyHeaderIndices?: number[];
 }>;
 
 export default function ParallaxScrollView({
   children,
   headerImage,
   headerBackgroundColor,
+  stickyHeaderIndices,
 }: Props) {
   const backgroundColor = useThemeColor({}, 'background');
   const colorScheme = useColorScheme() ?? 'light';
@@ -49,6 +51,7 @@ export default function ParallaxScrollView({
       ref={scrollRef}
       style={{ backgroundColor, flex: 1 }}
       scrollEventThrottle={16}
+      stickyHeaderIndices={stickyHeaderIndices}
     >
       <Animated.View
         style={[

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, ReactNode } from 'react';
-import { View, Animated, Keyboard, Platform, Easing } from 'react-native';
+import { View, Animated, Keyboard, Platform, Easing, TouchableWithoutFeedback, StyleSheet } from 'react-native';
 
 interface AnimatedModalProps {
   children: ReactNode;
@@ -10,7 +10,7 @@ interface AnimatedModalProps {
 /**
  * A reusable modal component with smooth entrance/exit animations and keyboard handling
  */
-export function AnimatedModal({ children, visible }: AnimatedModalProps) {
+export function AnimatedModal({ children, visible, onClose }: AnimatedModalProps) {
   const translateY = useRef(new Animated.Value(0)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(0.8)).current;
@@ -104,28 +104,58 @@ export function AnimatedModal({ children, visible }: AnimatedModalProps) {
   if (!visible) return null;
 
   return (
-    <Animated.View
-      className="absolute inset-0"
-      style={{
-        opacity: backdropOpacity,
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingHorizontal: 32
-      }}
-    >
-      <View className="absolute inset-0 bg-black/80" />
+    <Animated.View style={[styles.backdrop, { opacity: backdropOpacity }]}>
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.backdropTouchArea} />
+      </TouchableWithoutFeedback>
       <Animated.View
-        className="bg-white dark:bg-gray-900 rounded-2xl p-8 w-full max-w-md shadow-2xl"
-        style={{
-          opacity,
-          transform: [
-            { scale },
-            { translateY }
-          ]
-        }}
+        style={[
+          styles.modal,
+          {
+            opacity,
+            transform: [{ scale }, { translateY }]
+          }
+        ]}
       >
         {children}
       </Animated.View>
     </Animated.View>
   );
 }
+
+const styles = StyleSheet.create({
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+  },
+  backdropTouchArea: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+  },
+  modal: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 20,
+    width: '100%',
+    maxWidth: 400,
+    minHeight: 200,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 20,
+  },
+});
