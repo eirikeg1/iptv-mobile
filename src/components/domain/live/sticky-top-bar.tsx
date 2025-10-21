@@ -1,9 +1,7 @@
-import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Input } from '@/components/ui/input';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface TopBarProps {
   selectedGroupName: string;
@@ -19,7 +17,7 @@ export function TopBar({
   searchText,
   onSearchTextChange,
   onSearchClear,
-}: StickyTopBarProps) {
+}: TopBarProps) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
@@ -79,20 +77,6 @@ export function TopBar({
             onChangeText={onSearchTextChange}
             style={styles.searchInput}
           />
-          {searchText.length > 0 && (
-            <Button
-              variant="ghost"
-              size="small"
-              onPress={onSearchClear}
-              style={styles.clearButton}
-            >
-              <IconSymbol
-                name="xmark"
-                size={14}
-                color={isDark ? '#888' : '#666'}
-              />
-            </Button>
-          )}
         </View>
       </View>
     </View>

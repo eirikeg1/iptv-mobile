@@ -1,8 +1,9 @@
-import { memo } from 'react';
-import { TouchableOpacity, StyleSheet, ViewStyle, TextStyle } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
-import { IconSymbol, IconSymbolName } from '@/components/ui/icon-symbol';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { memo } from 'react';
+import { StyleSheet, TextStyle, TouchableOpacity, ViewStyle } from 'react-native';
+import { StyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
+import { IconSymbol, IconSymbolName } from './icon-symbol';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
 export type ButtonSize = 'small' | 'medium' | 'large';
@@ -160,7 +161,7 @@ export const Button = memo(function Button({
   const colors = getButtonColors();
   const sizeStyles = getSizeStyles();
 
-  const buttonStyle: ViewStyle = [
+  const buttonStyle: StyleProp<ViewStyle> = [
     styles.button,
     {
       backgroundColor: colors.backgroundColor,
