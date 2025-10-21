@@ -215,6 +215,65 @@ const migrations: Migration[] = [
       console.log('[Migration] Removed isPrimary column from users table');
     },
   },
+  {
+    version: 4,
+    name: 'update_user_settings_remove_inappropriate_fields',
+    up: async (db) => {
+      // SQLite doesn't support DROP COLUMN directly, so we need to recreate the table
+
+      // Create new user_settings table without inappropriate fields and with new defaultSubtitles and activePlaylistId fields
+      await db.execAsync(`
+        CREATE TABLE user_settings_new (
+          userId TEXT PRIMARY KEY NOT NULL,
+          theme TEXT NOT NULL DEFAULT 'system',
+          language TEXT NOT NULL DEFAULT 'en',
+          defaultQuality TEXT NOT NULL DEFAULT 'auto',
+          defaultSubtitles TEXT NOT NULL DEFAULT 'off',
+          activePlaylistId TEXT,
+          channelSortBy TEXT NOT NULL DEFAULT 'name',
+          parentalControlEnabled INTEGER NOT NULL DEFAULT 0,
+          parentalControlPin TEXT,
+          FOREIGN KEY (userId) REFERENCES users (id) ON DELETE CASCADE
+        );
+      `);
+
+      // Copy data from old table to new table (excluding removed fields)
+      await db.execAsync(`
+        INSERT INTO user_settings_new (userId, theme, language, defaultQuality, defaultSubtitles, activePlaylistId, channelSortBy, parentalControlEnabled, parentalControlPin)
+        SELECT userId, theme, language, defaultQuality, 'off' as defaultSubtitles, NULL as activePlaylistId, channelSortBy, parentalControlEnabled, parentalControlPin
+        FROM user_settings;
+      `);
+
+      // Drop old table
+      await db.execAsync(`DROP TABLE user_settings;`);
+
+      // Rename new table to original name
+      await db.execAsync(`ALTER TABLE user_settings_new RENAME TO user_settings;`);
+
+      console.log('[Migration] Updated user_settings table - removed autoplay, showChannelLogos, viewMode and added defaultSubtitles');
+    },
+  },
+  {
+    version: 5,
+    name: 'add_activePlaylistId_if_missing',
+    up: async (db) => {
+      // Check if activePlaylistId column exists, if not add it
+      try {
+        await db.execAsync(`
+          ALTER TABLE user_settings ADD COLUMN activePlaylistId TEXT;
+        `);
+        console.log('[Migration] Added activePlaylistId column to user_settings table');
+      } catch (error) {
+        // Column might already exist, check the error
+        if (error.message && error.message.includes('duplicate column name')) {
+          console.log('[Migration] activePlaylistId column already exists');
+        } else {
+          // If it's a different error, re-throw it
+          throw error;
+        }
+      }
+    },
+  },
 ];
 
 /**

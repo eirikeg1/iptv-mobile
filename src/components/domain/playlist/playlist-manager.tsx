@@ -1,6 +1,6 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { ActionCard } from '@/components/ui/action-card';
+import { Button } from '@/components/ui/button';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { usePlaylistStore } from '@/states/playlist-store';
@@ -18,7 +18,7 @@ export const PlaylistManager = memo(function PlaylistManager() {
   const isDark = colorScheme === 'dark';
 
   const [showModal, setShowModal] = useState(false);
-  const playlists = usePlaylistStore((state) => state.playlists);
+
   const isLoading = usePlaylistStore((state) => state.isLoading);
   const error = usePlaylistStore((state) => state.error);
 
@@ -33,14 +33,22 @@ export const PlaylistManager = memo(function PlaylistManager() {
   return (
     <ThemedView style={styles.container}>
       <View style={styles.content}>
-        <ThemedText type="subtitle" style={styles.header}>Playlist Management</ThemedText>
-        <ActionCard
-          icon="plus.circle"
-          title="Add Playlist"
-          onPress={handleOpenModal}
-          accessibilityLabel="Add playlist"
-          accessibilityHint="Open modal to add a new IPTV playlist"
-        />
+        <ThemedText type="subtitle" style={styles.header}>
+          Playlist Management
+        </ThemedText>
+
+        <View style={styles.actionRow}>
+          <Button
+            title="Add Playlist"
+            icon="plus.circle"
+            onPress={handleOpenModal}
+            size="medium"
+            variant="secondary"
+            accessibilityLabel="Add playlist"
+            accessibilityHint="Open modal to add a new IPTV playlist"
+          />
+        </View>
+
       </View>
 
       <View style={[styles.separator, { backgroundColor: isDark ? '#333' : '#ddd' }]} />
@@ -74,7 +82,12 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   header: {
-    marginBottom: 12,
+    marginBottom: 16,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    gap: 12,
+    flexWrap: 'wrap',
   },
   separator: {
     height: 1,

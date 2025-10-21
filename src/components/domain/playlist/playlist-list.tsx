@@ -6,7 +6,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { PlaylistModal } from './playlist-modal';
 import { usePlaylistStore } from '@/states/playlist-store';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { extractCleanUrl, getTimeElapsed } from '@/lib/playlist-utils';
+import { extractCleanUrl } from '@/lib/playlist-utils';
 import type { Playlist } from '@/types/playlist.types';
 
 /**
@@ -74,6 +74,17 @@ export const PlaylistList = memo(function PlaylistList() {
     [refreshPlaylist]
   );
 
+  const handleSelectPlaylist = useCallback(
+    async (playlist: Playlist) => {
+      try {
+        await setActivePlaylist(playlist.id);
+      } catch (error) {
+        console.error('Failed to select playlist:', error);
+      }
+    },
+    [setActivePlaylist]
+  );
+
   const renderPlaylistCard = useCallback(
     ({ item }: { item: Playlist }) => {
       const isActive = item.id === activePlaylistId;
@@ -82,16 +93,17 @@ export const PlaylistList = memo(function PlaylistList() {
         {
           backgroundColor: isDark ? '#2a2a2a' : '#f5f5f5',
           borderColor: isActive ? '#007AFF' : isDark ? '#444' : '#ddd',
+          borderWidth: isActive ? 2 : 1,
         },
       ];
 
       return (
         <TouchableOpacity
           style={cardStyle}
-          onPress={() => handleEdit(item)}
+          onPress={() => handleSelectPlaylist(item)}
           accessibilityRole="button"
           accessibilityLabel={`${item.name} playlist`}
-          accessibilityHint="Tap to edit this playlist"
+          accessibilityHint="Tap to select this playlist as active"
           accessibilityState={{ selected: isActive }}
         >
           <View style={styles.mainContent}>
@@ -117,6 +129,19 @@ export const PlaylistList = memo(function PlaylistList() {
             </View>
 
             <View style={styles.playlistActions}>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  handleEdit(item);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="Edit playlist"
+                accessibilityHint="Edit playlist details and settings"
+              >
+                <IconSymbol name="pencil" size={18} color={isDark ? '#888' : '#666'} />
+              </TouchableOpacity>
+
               <TouchableOpacity
                 style={styles.actionButton}
                 onPress={(e) => {
@@ -147,7 +172,7 @@ export const PlaylistList = memo(function PlaylistList() {
         </TouchableOpacity>
       );
     },
-    [activePlaylistId, isDark, handleEdit, handleRefresh, handleDelete]
+    [activePlaylistId, isDark, handleSelectPlaylist, handleEdit, handleRefresh, handleDelete]
   );
 
   const keyExtractor = useCallback((item: Playlist) => item.id, []);

@@ -1,9 +1,10 @@
 import { AddUserCard, UserProfileCard } from '@/components/domain/user/user-profile-card';
+import { AnimatedModal } from '@/components/ui/animated-modal';
 import { useUserStore } from '@/states/user-store';
 import type { User, UpdateUserInput } from '@/types/user.types';
 import { router } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, TextInput, View, KeyboardAvoidingView, Platform } from 'react-native';
+import { Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
 // Constants
 const PLACEHOLDER_COLOR = '#9CA3AF';
@@ -186,67 +187,61 @@ function UserSelectionScreen({
 }
 
 /**
- * Modal for creating a new user profile
+ * Modal for creating a new user profile with smooth keyboard animation
  */
 function CreateUserModal({ username, isCreating, onUsernameChange, onSubmit, onCancel }: UserFormProps) {
   return (
-    <KeyboardAvoidingView
-      className="absolute inset-0 bg-black/80"
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 }}
-    >
-      <View className="bg-white dark:bg-gray-900 rounded-2xl p-8 w-full max-w-md">
-        <Text className="text-2xl font-bold mb-6 text-gray-900 dark:text-white text-center">
-          Create New Profile
-        </Text>
+    <AnimatedModal visible={true}>
+      <Text className="text-2xl font-bold mb-6 text-gray-900 dark:text-white text-center">
+        Create New Profile
+      </Text>
 
-        <View className="items-center mb-6">
-          <View className="w-24 h-24 rounded-full bg-blue-600 items-center justify-center">
-            <Text className="text-5xl">{PROFILE_ICON}</Text>
-          </View>
-        </View>
-
-        <Text className="text-base font-semibold mb-3 text-gray-900 dark:text-white">Name</Text>
-
-        <TextInput
-          className="bg-gray-100 dark:bg-gray-800 px-4 py-3 rounded-xl text-base text-gray-900 dark:text-white mb-6 border border-gray-200 dark:border-gray-700"
-          placeholder="Enter name"
-          placeholderTextColor={PLACEHOLDER_COLOR}
-          value={username}
-          onChangeText={onUsernameChange}
-          autoFocus
-          editable={!isCreating}
-          returnKeyType="done"
-          onSubmitEditing={onSubmit}
-        />
-
-        <View className="flex-row gap-3">
-          <Pressable
-            onPress={onCancel}
-            disabled={isCreating}
-            className="flex-1 bg-gray-200 dark:bg-gray-700 py-3 rounded-xl disabled:opacity-50"
-            accessibilityRole="button"
-            accessibilityLabel="Cancel profile creation"
-          >
-            <Text className="text-center text-base font-semibold text-gray-900 dark:text-white">
-              Cancel
-            </Text>
-          </Pressable>
-
-          <Pressable
-            onPress={onSubmit}
-            disabled={isCreating || !username.trim()}
-            className="flex-1 bg-blue-600 py-3 rounded-xl disabled:opacity-50"
-            accessibilityRole="button"
-            accessibilityLabel="Create new profile"
-          >
-            <Text className="text-center text-base font-semibold text-white">
-              {isCreating ? 'Creating...' : 'Create'}
-            </Text>
-          </Pressable>
+      <View className="items-center mb-6">
+        <View className="w-24 h-24 rounded-full bg-blue-600 items-center justify-center">
+          <Text className="text-5xl">{PROFILE_ICON}</Text>
         </View>
       </View>
-    </KeyboardAvoidingView>
+
+      <Text className="text-base font-semibold mb-3 text-gray-900 dark:text-white">Name</Text>
+
+      <TextInput
+        className="bg-gray-100 dark:bg-gray-800 px-4 py-3 rounded-xl text-base text-gray-900 dark:text-white mb-6 border border-gray-200 dark:border-gray-700"
+        placeholder="Enter name"
+        placeholderTextColor={PLACEHOLDER_COLOR}
+        value={username}
+        onChangeText={onUsernameChange}
+        autoFocus
+        editable={!isCreating}
+        returnKeyType="done"
+        onSubmitEditing={onSubmit}
+      />
+
+      <View className="flex-row gap-3">
+        <Pressable
+          onPress={onCancel}
+          disabled={isCreating}
+          className="flex-1 bg-gray-200 dark:bg-gray-700 py-3 rounded-xl disabled:opacity-50"
+          accessibilityRole="button"
+          accessibilityLabel="Cancel profile creation"
+        >
+          <Text className="text-center text-base font-semibold text-gray-900 dark:text-white">
+            Cancel
+          </Text>
+        </Pressable>
+
+        <Pressable
+          onPress={onSubmit}
+          disabled={isCreating || !username.trim()}
+          className="flex-1 bg-blue-600 py-3 rounded-xl disabled:opacity-50"
+          accessibilityRole="button"
+          accessibilityLabel="Create new profile"
+        >
+          <Text className="text-center text-base font-semibold text-white">
+            {isCreating ? 'Creating...' : 'Create'}
+          </Text>
+        </Pressable>
+      </View>
+    </AnimatedModal>
   );
 }
 
@@ -313,63 +308,57 @@ function EditUserModal({
 
   if (editingUser) {
     return (
-      <KeyboardAvoidingView
-        className="absolute inset-0 bg-black/80"
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 }}
-      >
-        <View className="bg-white dark:bg-gray-900 rounded-2xl p-8 w-full max-w-md">
-          <Text className="text-2xl font-bold mb-6 text-gray-900 dark:text-white text-center">
-            Edit Profile
-          </Text>
+      <AnimatedModal visible={true}>
+        <Text className="text-2xl font-bold mb-6 text-gray-900 dark:text-white text-center">
+          Edit Profile
+        </Text>
 
-          <View className="items-center mb-6">
-            <View className="w-24 h-24 rounded-full bg-blue-600 items-center justify-center">
-              <Text className="text-5xl">{PROFILE_ICON}</Text>
-            </View>
-          </View>
-
-          <Text className="text-base font-semibold mb-3 text-gray-900 dark:text-white">Name</Text>
-
-          <TextInput
-            className="bg-gray-100 dark:bg-gray-800 px-4 py-3 rounded-xl text-base text-gray-900 dark:text-white mb-6 border border-gray-200 dark:border-gray-700"
-            placeholder="Enter name"
-            placeholderTextColor={PLACEHOLDER_COLOR}
-            value={newUsername}
-            onChangeText={setNewUsername}
-            autoFocus
-            editable={!isUpdating}
-            returnKeyType="done"
-            onSubmitEditing={handleUpdateUser}
-          />
-
-          <View className="flex-row gap-3">
-            <Pressable
-              onPress={() => setEditingUser(null)}
-              disabled={isUpdating}
-              className="flex-1 bg-gray-200 dark:bg-gray-700 py-3 rounded-xl disabled:opacity-50"
-              accessibilityRole="button"
-              accessibilityLabel="Cancel editing"
-            >
-              <Text className="text-center text-base font-semibold text-gray-900 dark:text-white">
-                Cancel
-              </Text>
-            </Pressable>
-
-            <Pressable
-              onPress={handleUpdateUser}
-              disabled={isUpdating || !newUsername.trim()}
-              className="flex-1 bg-blue-600 py-3 rounded-xl disabled:opacity-50"
-              accessibilityRole="button"
-              accessibilityLabel="Save changes"
-            >
-              <Text className="text-center text-base font-semibold text-white">
-                {isUpdating ? 'Saving...' : 'Save'}
-              </Text>
-            </Pressable>
+        <View className="items-center mb-6">
+          <View className="w-24 h-24 rounded-full bg-blue-600 items-center justify-center">
+            <Text className="text-5xl">{PROFILE_ICON}</Text>
           </View>
         </View>
-      </KeyboardAvoidingView>
+
+        <Text className="text-base font-semibold mb-3 text-gray-900 dark:text-white">Name</Text>
+
+        <TextInput
+          className="bg-gray-100 dark:bg-gray-800 px-4 py-3 rounded-xl text-base text-gray-900 dark:text-white mb-6 border border-gray-200 dark:border-gray-700"
+          placeholder="Enter name"
+          placeholderTextColor={PLACEHOLDER_COLOR}
+          value={newUsername}
+          onChangeText={setNewUsername}
+          autoFocus
+          editable={!isUpdating}
+          returnKeyType="done"
+          onSubmitEditing={handleUpdateUser}
+        />
+
+        <View className="flex-row gap-3">
+          <Pressable
+            onPress={() => setEditingUser(null)}
+            disabled={isUpdating}
+            className="flex-1 bg-gray-200 dark:bg-gray-700 py-3 rounded-xl disabled:opacity-50"
+            accessibilityRole="button"
+            accessibilityLabel="Cancel editing"
+          >
+            <Text className="text-center text-base font-semibold text-gray-900 dark:text-white">
+              Cancel
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={handleUpdateUser}
+            disabled={isUpdating || !newUsername.trim()}
+            className="flex-1 bg-blue-600 py-3 rounded-xl disabled:opacity-50"
+            accessibilityRole="button"
+            accessibilityLabel="Save changes"
+          >
+            <Text className="text-center text-base font-semibold text-white">
+              {isUpdating ? 'Saving...' : 'Save'}
+            </Text>
+          </Pressable>
+        </View>
+      </AnimatedModal>
     );
   }
 

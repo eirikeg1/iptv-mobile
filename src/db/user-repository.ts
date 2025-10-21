@@ -75,9 +75,8 @@ interface UserSettingsRow {
   theme: string;
   language: string;
   defaultQuality: string;
-  autoplay: number;
-  showChannelLogos: number;
-  viewMode: string;
+  defaultSubtitles: string;
+  activePlaylistId: string | null;
   channelSortBy: string;
   parentalControlEnabled: number;
   parentalControlPin: string | null;
@@ -151,9 +150,8 @@ class SQLiteUserRepository implements IUserRepository {
       theme: row.theme as any,
       language: row.language,
       defaultQuality: row.defaultQuality as any,
-      autoplay: row.autoplay === 1,
-      showChannelLogos: row.showChannelLogos === 1,
-      viewMode: row.viewMode as any,
+      defaultSubtitles: row.defaultSubtitles as any,
+      activePlaylistId: row.activePlaylistId || undefined,
       channelSortBy: row.channelSortBy as any,
       parentalControlEnabled: row.parentalControlEnabled === 1,
       parentalControlPin: row.parentalControlPin || undefined,
@@ -218,16 +216,15 @@ class SQLiteUserRepository implements IUserRepository {
 
       // Insert default settings
       await tx.runAsync(
-        `INSERT INTO user_settings (userId, theme, language, defaultQuality, autoplay, showChannelLogos, viewMode, channelSortBy, parentalControlEnabled, parentalControlPin)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO user_settings (userId, theme, language, defaultQuality, defaultSubtitles, activePlaylistId, channelSortBy, parentalControlEnabled, parentalControlPin)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           userId,
           DEFAULT_USER_SETTINGS.theme,
           DEFAULT_USER_SETTINGS.language,
           DEFAULT_USER_SETTINGS.defaultQuality,
-          DEFAULT_USER_SETTINGS.autoplay ? 1 : 0,
-          DEFAULT_USER_SETTINGS.showChannelLogos ? 1 : 0,
-          DEFAULT_USER_SETTINGS.viewMode,
+          DEFAULT_USER_SETTINGS.defaultSubtitles,
+          DEFAULT_USER_SETTINGS.activePlaylistId || null,
           DEFAULT_USER_SETTINGS.channelSortBy,
           DEFAULT_USER_SETTINGS.parentalControlEnabled ? 1 : 0,
           null,
@@ -312,16 +309,15 @@ class SQLiteUserRepository implements IUserRepository {
 
     await executeStatement(
       `UPDATE user_settings
-       SET theme = ?, language = ?, defaultQuality = ?, autoplay = ?, showChannelLogos = ?,
-           viewMode = ?, channelSortBy = ?, parentalControlEnabled = ?, parentalControlPin = ?
+       SET theme = ?, language = ?, defaultQuality = ?, defaultSubtitles = ?, activePlaylistId = ?,
+           channelSortBy = ?, parentalControlEnabled = ?, parentalControlPin = ?
        WHERE userId = ?`,
       [
         updated.theme,
         updated.language,
         updated.defaultQuality,
-        updated.autoplay ? 1 : 0,
-        updated.showChannelLogos ? 1 : 0,
-        updated.viewMode,
+        updated.defaultSubtitles,
+        updated.activePlaylistId || null,
         updated.channelSortBy,
         updated.parentalControlEnabled ? 1 : 0,
         updated.parentalControlPin || null,

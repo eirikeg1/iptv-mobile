@@ -19,10 +19,9 @@ export interface UserSettings {
   userId: string;
   theme: 'light' | 'dark' | 'system';
   language: string;
-  defaultQuality: 'auto' | 'low' | 'medium' | 'high' | 'max';
-  autoplay: boolean;
-  showChannelLogos: boolean;
-  viewMode: 'grid' | 'list';
+  defaultQuality: 'auto' | 'low' | 'high';
+  defaultSubtitles: 'off' | 'on';
+  activePlaylistId?: string;
   channelSortBy: 'name' | 'recent' | 'custom' | 'mostWatched';
   parentalControlEnabled: boolean;
   parentalControlPin?: string;
@@ -106,9 +105,8 @@ export const DEFAULT_USER_SETTINGS: Omit<UserSettings, 'userId'> = {
   theme: 'system',
   language: 'en',
   defaultQuality: 'auto',
-  autoplay: false,
-  showChannelLogos: true,
-  viewMode: 'grid',
+  defaultSubtitles: 'off',
+  activePlaylistId: undefined,
   channelSortBy: 'name',
   parentalControlEnabled: false,
 };

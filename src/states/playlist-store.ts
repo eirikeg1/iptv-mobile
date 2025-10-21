@@ -16,7 +16,7 @@ interface PlaylistState {
 
   addPlaylist: (input: CreatePlaylistInput) => Promise<void>;
   removePlaylist: (id: string) => Promise<void>;
-  setActivePlaylist: (id: string | null) => void;
+  setActivePlaylist: (id: string | null) => Promise<void>;
   refreshPlaylist: (id: string) => Promise<void>;
   updatePlaylist: (id: string, updates: UpdatePlaylistInput) => Promise<void>;
   loadPlaylists: () => Promise<void>;
@@ -151,7 +151,7 @@ export const usePlaylistStore = create<PlaylistState>((set, get) => ({
     }
   },
 
-  setActivePlaylist: (id: string | null) => {
+  setActivePlaylist: async (id: string | null) => {
     if (id !== null) {
       const playlist = get().playlists.find((p) => p.id === id);
       if (!playlist) {
@@ -159,7 +159,19 @@ export const usePlaylistStore = create<PlaylistState>((set, get) => ({
         return;
       }
     }
+
     set({ activePlaylistId: id, error: null });
+
+    // Also save to current user's settings
+    const { useUserStore } = await import('./user-store');
+    const currentUser = useUserStore.getState().currentUser;
+    if (currentUser) {
+      try {
+        await useUserStore.getState().updateSettings(currentUser.id, { activePlaylistId: id || undefined });
+      } catch (error) {
+        console.error('[PlaylistStore] Failed to save active playlist to user settings:', error);
+      }
+    }
   },
 
   refreshPlaylist: async (id: string) => {
@@ -254,8 +266,26 @@ export const usePlaylistStore = create<PlaylistState>((set, get) => ({
 
     try {
       const playlists = await playlistRepository.getAll();
+
+      // Load active playlist from current user's settings
+      let activePlaylistId: string | null = null;
+      try {
+        const { useUserStore } = await import('./user-store');
+        const currentUser = useUserStore.getState().currentUser;
+        if (currentUser?.settings?.activePlaylistId) {
+          // Check if the saved playlist still exists
+          const savedPlaylist = playlists.find(p => p.id === currentUser.settings.activePlaylistId);
+          if (savedPlaylist) {
+            activePlaylistId = currentUser.settings.activePlaylistId;
+          }
+        }
+      } catch (error) {
+        console.error('[PlaylistStore] Failed to load active playlist from user settings:', error);
+      }
+
       set({
         playlists,
+        activePlaylistId,
         isLoading: false,
       });
     } catch (error) {
