@@ -2,22 +2,14 @@ import React, { useState, useMemo } from 'react';
 import {
   Modal,
   StyleSheet,
-  TouchableOpacity,
   ScrollView,
-  Dimensions,
 } from 'react-native';
-import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Input } from '@/components/ui/input';
 import { ModalHeader } from '@/components/ui/modal-header';
-import { useSelectionColors } from '@/constants/selection-theme';
+import { GroupItemComponent, type GroupItem } from '@/components/domain/live/group-item';
 
-interface GroupItem {
-  name: string;
-  channelCount: number;
-}
 
 interface GroupSelectionModalProps {
   visible: boolean;
@@ -27,8 +19,6 @@ interface GroupSelectionModalProps {
   onGroupSelect: (groupName: string) => void;
 }
 
-const { width } = Dimensions.get('window');
-const ITEM_WIDTH = (width - 64) / 2; // 2 columns with padding
 
 export function GroupSelectionModal({
   visible,
@@ -41,7 +31,6 @@ export function GroupSelectionModal({
 
   // Theme colors
   const borderColor = useThemeColor({ light: '#ddd', dark: '#333' }, 'icon');
-  const selectionColors = useSelectionColors();
 
   // Filter groups based on search text
   const filteredGroups = useMemo(() => {
@@ -101,54 +90,14 @@ export function GroupSelectionModal({
           showsVerticalScrollIndicator={true}
         >
           <ThemedView style={styles.grid}>
-            {filteredGroups.map((item) => {
-              const isSelected = item.name === selectedGroupName;
-              const colors = isSelected ? selectionColors.selected : selectionColors.unselected;
-
-              return (
-                <TouchableOpacity
-                  key={item.name || 'all-channels'}
-                  style={[
-                    styles.groupItem,
-                    {
-                      backgroundColor: colors.background,
-                      borderColor: colors.border,
-                    },
-                  ]}
-                  onPress={() => handleGroupSelect(item.name)}
-                  activeOpacity={0.7}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Select ${item.name || 'All Channels'} group`}
-                  accessibilityHint={`${item.channelCount} channels in this group`}
-                >
-                  <IconSymbol
-                    name="folder"
-                    size={24}
-                    color={colors.icon}
-                    style={styles.groupIcon}
-                  />
-
-                  <ThemedText
-                    style={[
-                      styles.groupName,
-                      { color: colors.text },
-                    ]}
-                    numberOfLines={2}
-                  >
-                    {item.name || 'All Channels'}
-                  </ThemedText>
-
-                  <ThemedText
-                    style={[
-                      styles.channelCount,
-                      { color: colors.subtext },
-                    ]}
-                  >
-                    {item.channelCount} channel{item.channelCount !== 1 ? 's' : ''}
-                  </ThemedText>
-                </TouchableOpacity>
-              );
-            })}
+            {filteredGroups.map((item) => (
+              <GroupItemComponent
+                key={item.name || 'all-channels'}
+                item={item}
+                isSelected={item.name === selectedGroupName}
+                onPress={handleGroupSelect}
+              />
+            ))}
           </ThemedView>
         </ScrollView>
       </ThemedView>
@@ -180,28 +129,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-  },
-  groupItem: {
-    width: ITEM_WIDTH,
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: 16,
-    alignItems: 'center',
-    minHeight: 120,
-  },
-  groupIcon: {
-    marginBottom: 8,
-  },
-  groupName: {
-    fontSize: 14,
-    fontWeight: '500',
-    textAlign: 'center',
-    marginBottom: 4,
-    minHeight: 32,
-  },
-  channelCount: {
-    fontSize: 12,
-    textAlign: 'center',
   },
 });
