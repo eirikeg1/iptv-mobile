@@ -2,16 +2,17 @@ import React, { useState, useMemo } from 'react';
 import {
   Modal,
   StyleSheet,
-  View,
-  Text,
   TouchableOpacity,
   ScrollView,
   Dimensions,
 } from 'react-native';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { useThemeColor } from '@/hooks/use-theme-color';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Input } from '@/components/ui/input';
+import { ModalHeader } from '@/components/ui/modal-header';
+import { useSelectionColors } from '@/constants/selection-theme';
 
 interface GroupItem {
   name: string;
@@ -36,9 +37,11 @@ export function GroupSelectionModal({
   selectedGroupName,
   onGroupSelect,
 }: GroupSelectionModalProps) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
   const [filterText, setFilterText] = useState('');
+
+  // Theme colors
+  const borderColor = useThemeColor({ light: '#ddd', dark: '#333' }, 'icon');
+  const selectionColors = useSelectionColors();
 
   // Filter groups based on search text
   const filteredGroups = useMemo(() => {
@@ -76,40 +79,31 @@ export function GroupSelectionModal({
       presentationStyle="pageSheet"
       onRequestClose={handleClose}
     >
-      <View style={[styles.modalContent, { backgroundColor: isDark ? '#1a1a1a' : '#ffffff' }]}>
-        <View style={[styles.header, { borderBottomColor: isDark ? '#333' : '#ddd' }]}>
-          <ThemedText type="subtitle" style={styles.headerTitle}>
-            Select Channel Group
-          </ThemedText>
-          <TouchableOpacity
-            onPress={handleClose}
-            style={styles.closeButton}
-            accessibilityRole="button"
-            accessibilityLabel="Close modal"
-            accessibilityHint="Close the group selection modal"
-          >
-            <IconSymbol name="xmark" size={24} color={isDark ? '#fff' : '#000'} />
-          </TouchableOpacity>
-        </View>
+      <ThemedView style={styles.modalContent}>
+        <ModalHeader
+          title="Select Channel Group"
+          onClose={handleClose}
+        />
 
         {/* Filter Input */}
-        <View style={[styles.filterContainer, { borderBottomColor: isDark ? '#333' : '#e5e5e5' }]}>
+        <ThemedView style={[styles.filterContainer, { borderBottomColor: borderColor }]}>
           <Input
             placeholder="Filter groups..."
             value={filterText}
             onChangeText={setFilterText}
             style={styles.filterInput}
           />
-        </View>
+        </ThemedView>
 
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={true}
         >
-          <View style={styles.grid}>
+          <ThemedView style={styles.grid}>
             {filteredGroups.map((item) => {
               const isSelected = item.name === selectedGroupName;
+              const colors = isSelected ? selectionColors.selected : selectionColors.unselected;
 
               return (
                 <TouchableOpacity
@@ -117,20 +111,8 @@ export function GroupSelectionModal({
                   style={[
                     styles.groupItem,
                     {
-                      backgroundColor: isSelected
-                        ? isDark
-                          ? '#3b82f6'
-                          : '#007AFF'
-                        : isDark
-                        ? '#2a2a2a'
-                        : '#f5f5f5',
-                      borderColor: isSelected
-                        ? isDark
-                          ? '#3b82f6'
-                          : '#007AFF'
-                        : isDark
-                        ? '#444'
-                        : '#e5e5e5',
+                      backgroundColor: colors.background,
+                      borderColor: colors.border,
                     },
                   ]}
                   onPress={() => handleGroupSelect(item.name)}
@@ -139,56 +121,37 @@ export function GroupSelectionModal({
                   accessibilityLabel={`Select ${item.name || 'All Channels'} group`}
                   accessibilityHint={`${item.channelCount} channels in this group`}
                 >
-                  <View style={styles.groupIcon}>
-                    <IconSymbol
-                      name="folder"
-                      size={24}
-                      color={
-                        isSelected
-                          ? '#ffffff'
-                          : isDark
-                          ? '#888'
-                          : '#666'
-                      }
-                    />
-                  </View>
+                  <IconSymbol
+                    name="folder"
+                    size={24}
+                    color={colors.icon}
+                    style={styles.groupIcon}
+                  />
 
-                  <Text
+                  <ThemedText
                     style={[
                       styles.groupName,
-                      {
-                        color: isSelected
-                          ? '#ffffff'
-                          : isDark
-                          ? '#ffffff'
-                          : '#000000',
-                      },
+                      { color: colors.text },
                     ]}
                     numberOfLines={2}
                   >
                     {item.name || 'All Channels'}
-                  </Text>
+                  </ThemedText>
 
-                  <Text
+                  <ThemedText
                     style={[
                       styles.channelCount,
-                      {
-                        color: isSelected
-                          ? '#e5e7eb'
-                          : isDark
-                          ? '#888'
-                          : '#666',
-                      },
+                      { color: colors.subtext },
                     ]}
                   >
                     {item.channelCount} channel{item.channelCount !== 1 ? 's' : ''}
-                  </Text>
+                  </ThemedText>
                 </TouchableOpacity>
               );
             })}
-          </View>
+          </ThemedView>
         </ScrollView>
-      </View>
+      </ThemedView>
     </Modal>
   );
 }
@@ -196,20 +159,6 @@ export function GroupSelectionModal({
 const styles = StyleSheet.create({
   modalContent: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-  },
-  headerTitle: {
-    fontSize: 20,
-  },
-  closeButton: {
-    padding: 4,
   },
   filterContainer: {
     paddingHorizontal: 16,
