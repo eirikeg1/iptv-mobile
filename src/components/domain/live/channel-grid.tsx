@@ -1,14 +1,14 @@
 import React, { useMemo, useCallback } from 'react';
 import {
   StyleSheet,
-  View,
-  Text,
   TouchableOpacity,
   Image,
   Dimensions,
 } from 'react-native';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { useThemeColor } from '@/hooks/use-theme-color';
 import { usePlaylistStore } from '@/states/playlist-store';
 import type { Channel } from '@/types/playlist.types';
 
@@ -29,8 +29,7 @@ export function ChannelGrid({
   searchText = '',
   onChannelPress,
 }: ChannelGridProps) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const iconColor = useThemeColor({}, 'icon');
   const activePlaylist = usePlaylistStore((state) => state.getActivePlaylist());
 
   const filteredChannels = useMemo(() => {
@@ -73,25 +72,15 @@ export function ChannelGrid({
 
   if (!activePlaylist) {
     return (
-      <View style={styles.emptyContainer}>
-        <IconSymbol name="tv" size={64} color={isDark ? '#555' : '#ccc'} />
-        <Text
-          style={[
-            styles.emptyTitle,
-            { color: isDark ? '#ffffff' : '#000000' },
-          ]}
-        >
+      <ThemedView style={styles.emptyContainer}>
+        <IconSymbol name="tv" size={64} color={iconColor} />
+        <ThemedText style={styles.emptyTitle}>
           No Active Playlist
-        </Text>
-        <Text
-          style={[
-            styles.emptyText,
-            { color: isDark ? '#aaa' : '#666' },
-          ]}
-        >
+        </ThemedText>
+        <ThemedText style={styles.emptyText} type="subtitle">
           Please add and select a playlist from the settings
-        </Text>
-      </View>
+        </ThemedText>
+      </ThemedView>
     );
   }
 
@@ -100,45 +89,35 @@ export function ChannelGrid({
     const isFiltering = !!selectedGroup;
 
     return (
-      <View style={styles.emptyContainer}>
+      <ThemedView style={styles.emptyContainer}>
         <IconSymbol
           name={isSearching ? 'magnifyingglass' : 'tv'}
           size={64}
-          color={isDark ? '#555' : '#ccc'}
+          color={iconColor}
         />
-        <Text
-          style={[
-            styles.emptyTitle,
-            { color: isDark ? '#ffffff' : '#000000' },
-          ]}
-        >
+        <ThemedText style={styles.emptyTitle}>
           {isSearching ? 'No Results' : 'No Channels'}
-        </Text>
-        <Text
-          style={[
-            styles.emptyText,
-            { color: isDark ? '#aaa' : '#666' },
-          ]}
-        >
+        </ThemedText>
+        <ThemedText style={styles.emptyText} type="subtitle">
           {isSearching
             ? `No channels found for "${searchText}"`
             : isFiltering
             ? `No channels found in "${selectedGroup}" group`
             : "This playlist doesn't contain any channels"}
-        </Text>
-      </View>
+        </ThemedText>
+      </ThemedView>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.grid}>
+    <ThemedView style={styles.container}>
+      <ThemedView style={styles.grid}>
         {filteredChannels.map((channel, index) => {
           const hasLogo = !!channel.tvg.logo;
           const initial = getChannelInitial(channel.name);
 
           return (
-            <View key={`channel-${index}`} style={styles.gridItem}>
+            <ThemedView key={`channel-${index}`} style={styles.gridItem}>
               <TouchableOpacity
                 style={styles.channelItem}
                 onPress={() => handleChannelPress(channel)}
@@ -157,45 +136,30 @@ export function ChannelGrid({
                     }}
                   />
                 ) : (
-                  <View
+                  <ThemedView
                     style={[
                       styles.channelIcon,
                       styles.fallbackIcon,
-                      {
-                        backgroundColor: isDark ? '#444' : '#ddd',
-                      },
                     ]}
                   >
-                    <Text
-                      style={[
-                        styles.fallbackText,
-                        {
-                          color: isDark ? '#ffffff' : '#000000',
-                        },
-                      ]}
-                    >
+                    <ThemedText style={styles.fallbackText}>
                       {initial}
-                    </Text>
-                  </View>
+                    </ThemedText>
+                  </ThemedView>
                 )}
 
-                <Text
-                  style={[
-                    styles.channelName,
-                    {
-                      color: isDark ? '#ffffff' : '#000000',
-                    },
-                  ]}
+                <ThemedText
+                  style={styles.channelName}
                   numberOfLines={2}
                 >
                   {channel.name}
-                </Text>
+                </ThemedText>
               </TouchableOpacity>
-            </View>
+            </ThemedView>
           );
         })}
-      </View>
-    </View>
+      </ThemedView>
+    </ThemedView>
   );
 }
 
