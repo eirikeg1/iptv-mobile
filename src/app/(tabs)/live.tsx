@@ -1,20 +1,18 @@
-import React, { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { ChannelGrid } from '@/components/domain/live/channel-grid';
+import { TopBar } from '@/components/domain/live/sticky-top-bar';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { TopBar } from '@/components/domain/live/sticky-top-bar';
-import { GroupSelectionModal } from '@/components/domain/live/group-selection-modal';
-import { ChannelGrid } from '@/components/domain/live/channel-grid';
 import { usePlaylistStore } from '@/states/playlist-store';
 import type { Channel } from '@/types/playlist.types';
 
 export default function LiveScreen() {
   const [selectedGroupName, setSelectedGroupName] = useState<string>('');
   const [searchText, setSearchText] = useState<string>('');
-  const [isGroupModalVisible, setIsGroupModalVisible] = useState(false);
 
   const activePlaylist = usePlaylistStore((state) => state.getActivePlaylist());
 
@@ -76,8 +74,9 @@ export default function LiveScreen() {
         </ThemedView>
 
         <TopBar
+          groups={groups}
           selectedGroupName={selectedGroupName}
-          onGroupSelectorPress={() => setIsGroupModalVisible(true)}
+          onGroupSelect={handleGroupSelect}
           searchText={searchText}
           onSearchTextChange={handleSearchTextChange}
           onSearchClear={handleSearchClear}
@@ -90,13 +89,6 @@ export default function LiveScreen() {
         />
       </ParallaxScrollView>
 
-      <GroupSelectionModal
-        visible={isGroupModalVisible}
-        onClose={() => setIsGroupModalVisible(false)}
-        groups={groups}
-        selectedGroupName={selectedGroupName}
-        onGroupSelect={handleGroupSelect}
-      />
     </View>
   );
 }

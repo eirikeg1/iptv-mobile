@@ -1,73 +1,49 @@
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { Dropdown, type DropdownOption } from '@/components/ui/dropdown';
 import { Input } from '@/components/ui/input';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+
+interface GroupOption {
+  name: string;
+  channelCount: number;
+}
 
 interface TopBarProps {
+  groups: GroupOption[];
   selectedGroupName: string;
-  onGroupSelectorPress: () => void;
+  onGroupSelect: (groupName: string) => void;
   searchText: string;
   onSearchTextChange: (text: string) => void;
   onSearchClear: () => void;
 }
 
 export function TopBar({
+  groups,
   selectedGroupName,
-  onGroupSelectorPress,
+  onGroupSelect,
   searchText,
   onSearchTextChange,
   onSearchClear,
 }: TopBarProps) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  // Convert groups to dropdown options
+  const groupOptions: DropdownOption[] = groups.map(group => ({
+    label: group.name || 'All Channels',
+    value: group.name,
+    description: `${group.channelCount} channel${group.channelCount !== 1 ? 's' : ''}`,
+  }));
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: isDark ? '#1a1a1a' : '#ffffff',
-          borderBottomColor: isDark ? '#333' : '#e5e5e5',
-        },
-      ]}
-    >
+    <View style={styles.container}>
       <View style={styles.content}>
-        {/* Group Selector Button */}
-        <TouchableOpacity
-          style={[
-            styles.groupButton,
-            {
-              backgroundColor: isDark ? '#2a2a2a' : '#f5f5f5',
-              borderColor: isDark ? '#444' : '#ddd',
-            },
-          ]}
-          onPress={onGroupSelectorPress}
-          activeOpacity={0.7}
-        >
-          <View style={styles.groupButtonContent}>
-            <IconSymbol
-              name="folder"
-              size={16}
-              color={isDark ? '#ffffff' : '#000000'}
-            />
-            <View style={styles.groupTextContainer}>
-              <Text
-                style={[
-                  styles.groupText,
-                  { color: isDark ? '#ffffff' : '#000000' },
-                ]}
-                numberOfLines={1}
-              >
-                {selectedGroupName || 'All Channels'}
-              </Text>
-            </View>
-            <IconSymbol
-              name="chevron.down"
-              size={14}
-              color={isDark ? '#888' : '#666'}
-            />
-          </View>
-        </TouchableOpacity>
+        {/* Group Selector Dropdown */}
+        <View style={styles.dropdownContainer}>
+          <Dropdown
+            options={groupOptions}
+            value={selectedGroupName}
+            onSelect={onGroupSelect as (value: unknown) => void}
+            placeholder="All Channels"
+            accessibilityLabel="Select channel group"
+          />
+        </View>
 
         {/* Search Input */}
         <View style={styles.searchContainer}>
@@ -88,41 +64,15 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 12,
     paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
   },
   content: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: 'column',
     gap: 12,
   },
-  groupButton: {
-    flex: 0,
-    minWidth: 120,
-    maxWidth: 160,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  groupButtonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  groupTextContainer: {
-    flex: 1,
-    minWidth: 0,
-  },
-  groupText: {
-    fontSize: 14,
-    fontWeight: '500',
+  dropdownContainer: {
+    alignSelf: 'flex-start',
+    minWidth: 200,
+    maxWidth: '70%',
   },
   searchContainer: {
     flex: 1,
@@ -134,10 +84,5 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 36,
     fontSize: 14,
-  },
-  clearButton: {
-    position: 'absolute',
-    right: 4,
-    padding: 8,
   },
 });
