@@ -22,7 +22,7 @@ After implementing ANY change:
 4. **Never Leave Broken Code**: Code must be in a working state after changes
 
 ### Commands to Run
-- Linting: `expo lint`
+- Linting: `npx expo lint`
 - TypeScript: `npm run typecheck`
 - Tests: (check package.json or README for test commands)
 
