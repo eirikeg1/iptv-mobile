@@ -274,7 +274,7 @@ export const usePlaylistStore = create<PlaylistState>((set, get) => ({
         const currentUser = useUserStore.getState().currentUser;
         if (currentUser?.settings?.activePlaylistId) {
           // Check if the saved playlist still exists
-          const savedPlaylist = playlists.find(p => p.id === currentUser.settings.activePlaylistId);
+          const savedPlaylist = playlists.find(p => p.id === currentUser.settings?.activePlaylistId);
           if (savedPlaylist) {
             activePlaylistId = currentUser.settings.activePlaylistId;
           }

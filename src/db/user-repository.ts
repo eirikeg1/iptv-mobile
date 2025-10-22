@@ -132,7 +132,6 @@ class SQLiteUserRepository implements IUserRepository {
       id: row.id,
       username: row.username,
       avatarUrl: row.avatarUrl || undefined,
-      isPrimary: false,
       pin: row.pin || undefined,
       createdAt: new Date(row.createdAt),
       updatedAt: new Date(row.updatedAt),

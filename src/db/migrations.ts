@@ -265,7 +265,7 @@ const migrations: Migration[] = [
         console.log('[Migration] Added activePlaylistId column to user_settings table');
       } catch (error) {
         // Column might already exist, check the error
-        if (error.message && error.message.includes('duplicate column name')) {
+        if (error instanceof Error && error.message.includes('duplicate column name')) {
           console.log('[Migration] activePlaylistId column already exists');
         } else {
           // If it's a different error, re-throw it
