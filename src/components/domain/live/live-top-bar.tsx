@@ -1,47 +1,36 @@
-import { Dropdown, type DropdownOption } from '@/components/ui/dropdown';
-import { Input } from '@/components/ui/input';
 import { StyleSheet, View } from 'react-native';
+import { Input } from '@/components/ui/input';
+import { ChannelGroupButton } from './channel-group-button';
 
 interface GroupOption {
   name: string;
   channelCount: number;
 }
 
-interface TopBarProps {
+interface LiveTopBarProps {
   groups: GroupOption[];
   selectedGroupName: string;
   onGroupSelect: (groupName: string) => void;
   searchText: string;
   onSearchTextChange: (text: string) => void;
-  onSearchClear: () => void;
 }
 
-export function TopBar({
+export function LiveTopBar({
   groups,
   selectedGroupName,
   onGroupSelect,
   searchText,
   onSearchTextChange,
-  onSearchClear,
-}: TopBarProps) {
-  // Convert groups to dropdown options
-  const groupOptions: DropdownOption[] = groups.map(group => ({
-    label: group.name || 'All Channels',
-    value: group.name,
-    description: `${group.channelCount} channel${group.channelCount !== 1 ? 's' : ''}`,
-  }));
-
+}: LiveTopBarProps) {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        {/* Group Selector Dropdown */}
-        <View style={styles.dropdownContainer}>
-          <Dropdown
-            options={groupOptions}
-            value={selectedGroupName}
-            onSelect={onGroupSelect}
-            placeholder="All Channels"
-            accessibilityLabel="Select channel group"
+        {/* Group Selector Button */}
+        <View style={styles.buttonContainer}>
+          <ChannelGroupButton
+            groups={groups}
+            selectedGroupName={selectedGroupName}
+            onGroupSelect={onGroupSelect}
           />
         </View>
 
@@ -69,10 +58,8 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     gap: 12,
   },
-  dropdownContainer: {
+  buttonContainer: {
     alignSelf: 'flex-start',
-    minWidth: 200,
-    maxWidth: '70%',
   },
   searchContainer: {
     flex: 1,

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { ChannelGrid } from '@/components/domain/live/channel-grid';
-import { TopBar } from '@/components/domain/live/sticky-top-bar';
+import { LiveTopBar } from '@/components/domain/live/live-top-bar';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -45,10 +45,6 @@ export default function LiveScreen() {
     setSearchText(text);
   };
 
-  const handleSearchClear = () => {
-    setSearchText('');
-  };
-
   const handleChannelPress = (channel: Channel) => {
     if (__DEV__) {
       console.log('Channel pressed:', channel.name);
@@ -73,13 +69,12 @@ export default function LiveScreen() {
           <ThemedText type="title">Live TV</ThemedText>
         </ThemedView>
 
-        <TopBar
+        <LiveTopBar
           groups={groups}
           selectedGroupName={selectedGroupName}
           onGroupSelect={handleGroupSelect}
           searchText={searchText}
           onSearchTextChange={handleSearchTextChange}
-          onSearchClear={handleSearchClear}
         />
 
         <ChannelGrid

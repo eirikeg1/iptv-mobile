@@ -1,4 +1,4 @@
-import { memo, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, StyleSheet, TouchableOpacity, Modal, FlatList, ViewStyle } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -55,7 +55,7 @@ export interface DropdownProps<T = string> {
 /**
  * A reusable dropdown component for selecting from a list of options
  */
-export const Dropdown = memo(function Dropdown<T = string>({
+export function Dropdown<T = string>({
   options,
   value,
   onSelect,
@@ -192,7 +192,7 @@ export const Dropdown = memo(function Dropdown<T = string>({
       </Modal>
     </View>
   );
-});
+}
 
 const styles = StyleSheet.create({
   container: {
