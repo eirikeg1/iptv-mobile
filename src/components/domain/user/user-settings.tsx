@@ -1,5 +1,5 @@
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import { ThemedText } from '@/components/ui/display/themed-text';
+import { ThemedView } from '@/components/ui/display/themed-view';
 import { useUserStore } from '@/states/user-store';
 import { router } from 'expo-router';
 import { memo, useCallback } from 'react';

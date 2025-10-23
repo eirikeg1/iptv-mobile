@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/controls/button';
+import { useState } from 'react';
 import { GroupSelectionModal } from './group-selection-modal';
 
 interface GroupOption {

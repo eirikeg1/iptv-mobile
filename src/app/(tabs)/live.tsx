@@ -3,10 +3,10 @@ import { StyleSheet, View } from 'react-native';
 
 import { ChannelGrid } from '@/components/domain/live/channel-grid';
 import { LiveTopBar } from '@/components/domain/live/live-top-bar';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import ParallaxScrollView from '@/components/ui/containers/parallax-scroll-view';
+import { IconSymbol } from '@/components/ui/display/icon-symbol';
+import { ThemedText } from '@/components/ui/display/themed-text';
+import { ThemedView } from '@/components/ui/display/themed-view';
 import { usePlaylistStore } from '@/states/playlist-store';
 import type { Channel } from '@/types/playlist.types';
 

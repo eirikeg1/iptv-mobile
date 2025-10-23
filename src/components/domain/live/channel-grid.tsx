@@ -1,16 +1,16 @@
-import React, { useMemo, useCallback } from 'react';
-import {
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  Dimensions,
-} from 'react-native';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import { IconSymbol } from '@/components/ui/display/icon-symbol';
+import { ThemedText } from '@/components/ui/display/themed-text';
+import { ThemedView } from '@/components/ui/display/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { usePlaylistStore } from '@/states/playlist-store';
 import type { Channel } from '@/types/playlist.types';
+import { useCallback, useMemo } from 'react';
+import {
+  Dimensions,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native';
 
 interface ChannelGridProps {
   selectedGroup?: string;

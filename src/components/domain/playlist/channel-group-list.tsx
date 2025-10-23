@@ -1,11 +1,11 @@
-import { useCallback, memo, useMemo } from 'react';
-import { View, StyleSheet, FlatList } from 'react-native';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { ActionCard } from '@/components/ui/action-card';
-import { usePlaylistStore } from '@/states/playlist-store';
+import { ActionCard } from '@/components/ui/containers/action-card';
+import { IconSymbol } from '@/components/ui/display/icon-symbol';
+import { ThemedText } from '@/components/ui/display/themed-text';
+import { ThemedView } from '@/components/ui/display/themed-view';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { usePlaylistStore } from '@/states/playlist-store';
+import { memo, useCallback, useMemo } from 'react';
+import { FlatList, StyleSheet } from 'react-native';
 
 interface ChannelGroup {
   title: string;

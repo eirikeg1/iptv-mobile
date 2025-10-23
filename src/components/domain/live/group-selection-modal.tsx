@@ -1,14 +1,14 @@
-import React, { useState, useMemo } from 'react';
+import { GroupItemComponent, type GroupItem } from '@/components/domain/live/group-item';
+import { ModalHeader } from '@/components/ui/containers/modal/modal-header';
+import { Input } from '@/components/ui/controls/inputs/input';
+import { ThemedView } from '@/components/ui/display/themed-view';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { useMemo, useState } from 'react';
 import {
   Modal,
-  StyleSheet,
   ScrollView,
+  StyleSheet,
 } from 'react-native';
-import { ThemedView } from '@/components/themed-view';
-import { useThemeColor } from '@/hooks/use-theme-color';
-import { Input } from '@/components/ui/input';
-import { ModalHeader } from '@/components/ui/modal-header';
-import { GroupItemComponent, type GroupItem } from '@/components/domain/live/group-item';
 
 
 interface GroupSelectionModalProps {

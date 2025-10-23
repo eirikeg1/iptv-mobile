@@ -1,8 +1,7 @@
-import React from 'react';
-import { StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
-import { ThemedText } from '@/components/themed-text';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { IconSymbol } from '@/components/ui/display/icon-symbol';
+import { ThemedText } from '@/components/ui/display/themed-text';
 import { useSelectionColors } from '@/constants/selection-theme';
+import { Dimensions, StyleSheet, TouchableOpacity } from 'react-native';
 
 const { width } = Dimensions.get('window');
 const ITEM_WIDTH = (width - 64) / 2; // 2 columns with padding

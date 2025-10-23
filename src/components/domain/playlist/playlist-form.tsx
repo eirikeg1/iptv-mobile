@@ -1,11 +1,11 @@
-import { useState, useCallback, memo, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, ActivityIndicator, Switch } from 'react-native';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/controls/inputs/input';
+import { Textarea } from '@/components/ui/controls/inputs/textarea';
+import { ThemedText } from '@/components/ui/display/themed-text';
+import { ThemedView } from '@/components/ui/display/themed-view';
 import { usePlaylistStore } from '@/states/playlist-store';
 import type { Playlist } from '@/types/playlist.types';
+import { memo, useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, Switch, TouchableOpacity, View } from 'react-native';
 
 interface PlaylistFormProps {
   onSuccess?: () => void;

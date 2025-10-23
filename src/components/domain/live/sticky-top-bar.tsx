@@ -1,5 +1,5 @@
-import { Dropdown, type DropdownOption } from '@/components/ui/dropdown';
-import { Input } from '@/components/ui/input';
+import { Dropdown, type DropdownOption } from '@/components/ui/controls/inputs/dropdown';
+import { Input } from '@/components/ui/controls/inputs/input';
 import { StyleSheet, View } from 'react-native';
 
 interface GroupOption {

@@ -1,19 +1,18 @@
+import { IconSymbol } from '@/components/ui/display/icon-symbol';
+import { ThemedText } from '@/components/ui/display/themed-text';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import type { Playlist } from '@/types/playlist.types';
 import { memo } from 'react';
 import {
+  KeyboardAvoidingView,
   Modal,
-  View,
+  Platform,
+  ScrollView,
   StyleSheet,
   TouchableOpacity,
-  KeyboardAvoidingView,
-  ScrollView,
-  Platform,
-  TouchableWithoutFeedback,
+  View
 } from 'react-native';
-import { ThemedText } from '@/components/themed-text';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { PlaylistForm } from './playlist-form';
-import type { Playlist } from '@/types/playlist.types';
 
 interface PlaylistModalProps {
   visible: boolean;

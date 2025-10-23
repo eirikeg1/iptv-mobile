@@ -1,8 +1,8 @@
-import React, { useState, useCallback } from 'react';
-import { View, StyleSheet, TouchableOpacity, Modal, FlatList, ViewStyle } from 'react-native';
-import { ThemedText } from '@/components/themed-text';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { IconSymbol } from '@/components/ui/display/icon-symbol';
+import { ThemedText } from '@/components/ui/display/themed-text';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useCallback, useState } from 'react';
+import { FlatList, Modal, StyleSheet, TouchableOpacity, View, ViewStyle } from 'react-native';
 
 export interface DropdownOption<T = string> {
   label: string;

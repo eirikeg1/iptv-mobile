@@ -1,9 +1,9 @@
-import { ThemedText } from '@/components/themed-text';
+import { ThemedText } from '@/components/ui/display/themed-text';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { memo } from 'react';
 import { StyleSheet, TextStyle, TouchableOpacity, ViewStyle } from 'react-native';
 import { StyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
-import { IconSymbol, IconSymbolName } from './icon-symbol';
+import { IconSymbol, IconSymbolName } from '../display/icon-symbol';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
 export type ButtonSize = 'small' | 'medium' | 'large';

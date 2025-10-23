@@ -1,11 +1,11 @@
-import { useCallback, memo, useMemo } from 'react';
-import { View, StyleSheet, TouchableOpacity, FlatList, Image } from 'react-native';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { usePlaylistStore } from '@/states/playlist-store';
+import { IconSymbol } from '@/components/ui/display/icon-symbol';
+import { ThemedText } from '@/components/ui/display/themed-text';
+import { ThemedView } from '@/components/ui/display/themed-view';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { usePlaylistStore } from '@/states/playlist-store';
 import type { Channel } from '@/types/playlist.types';
+import { memo, useCallback, useMemo } from 'react';
+import { FlatList, Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 interface ChannelListProps {
   /** Optional group name to filter channels. If omitted, shows all channels. */

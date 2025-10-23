@@ -1,5 +1,5 @@
+import { Input } from '@/components/ui/controls/inputs/input';
 import { StyleSheet, View } from 'react-native';
-import { Input } from '@/components/ui/input';
 import { ChannelGroupButton } from './channel-group-button';
 
 interface GroupOption {

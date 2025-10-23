@@ -1,7 +1,7 @@
 import { AddUserCard, UserProfileCard } from '@/components/domain/user/user-profile-card';
-import { AnimatedModal } from '@/components/ui/animated-modal';
+import { AnimatedModal } from '@/components/ui/containers/modal/animated-modal';
 import { useUserStore } from '@/states/user-store';
-import type { User, UpdateUserInput } from '@/types/user.types';
+import type { UpdateUserInput, User } from '@/types/user.types';
 import { router } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';

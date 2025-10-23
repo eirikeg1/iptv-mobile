@@ -1,4 +1,4 @@
-import { ThemedText } from '@/components/themed-text';
+import { ThemedText } from '@/components/ui/display/themed-text';
 import { Children, cloneElement, isValidElement, ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 

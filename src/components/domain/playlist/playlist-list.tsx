@@ -1,13 +1,13 @@
-import { useCallback, memo, useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, FlatList, Alert } from 'react-native';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { PlaylistModal } from './playlist-modal';
-import { usePlaylistStore } from '@/states/playlist-store';
+import { IconSymbol } from '@/components/ui/display/icon-symbol';
+import { ThemedText } from '@/components/ui/display/themed-text';
+import { ThemedView } from '@/components/ui/display/themed-view';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { extractCleanUrl } from '@/lib/playlist-utils';
+import { usePlaylistStore } from '@/states/playlist-store';
 import type { Playlist } from '@/types/playlist.types';
+import { memo, useCallback, useState } from 'react';
+import { Alert, FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { PlaylistModal } from './playlist-modal';
 
 /**
  * Displays a list of all playlists with management actions.
