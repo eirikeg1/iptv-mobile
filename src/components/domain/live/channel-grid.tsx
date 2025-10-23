@@ -51,8 +51,7 @@ export function ChannelGrid({
       );
     }
 
-    // Limit to first 100 channels to prevent performance issues
-    return channels.slice(0, 100);
+    return channels;
   }, [activePlaylist, selectedGroup, searchText]);
 
   const handleChannelPress = useCallback(
