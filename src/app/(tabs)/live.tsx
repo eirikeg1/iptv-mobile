@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useRouter } from 'expo-router';
 
 import { LiveTopBar } from '@/components/domain/live/live-top-bar';
 import InfiniteParallaxGrid from '@/components/ui/containers/infinite-parallax-grid';
@@ -15,6 +16,7 @@ export default function LiveScreen() {
   const [selectedGroupName, setSelectedGroupName] = useState<string>('');
   const [searchText, setSearchText] = useState<string>('');
 
+  const router = useRouter();
   const activePlaylist = usePlaylistStore((state) => state.getActivePlaylist());
 
   const iconColor = useThemeColor({}, 'icon');
@@ -75,8 +77,15 @@ export default function LiveScreen() {
     if (__DEV__) {
       console.log('Channel pressed:', channel.name);
     }
-    // TODO: Implement channel playback
-  }, []);
+
+    // Navigate to video player with channel data
+    router.push({
+      pathname: '/video-player',
+      params: {
+        channel: JSON.stringify(channel),
+      },
+    });
+  }, [router]);
 
   const getChannelInitial = (channelName: string) => {
     return channelName.charAt(0).toUpperCase();

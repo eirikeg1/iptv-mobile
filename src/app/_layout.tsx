@@ -24,6 +24,14 @@ export default function RootLayout() {
           <Stack.Screen name="user-select" />
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="modal" options={{ presentation: 'modal', headerShown: true, title: 'Modal' }} />
+          <Stack.Screen
+            name="video-player"
+            options={{
+              headerShown: false,
+              orientation: 'landscape',
+              gestureEnabled: false
+            }}
+          />
         </Stack>
         <StatusBar style="auto" />
         <PortalHost />
