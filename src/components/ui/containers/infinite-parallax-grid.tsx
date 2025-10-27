@@ -4,7 +4,7 @@ import Animated, {
   interpolate,
   useAnimatedRef,
   useAnimatedStyle,
-  useScrollViewOffset,
+  useScrollOffset,
 } from 'react-native-reanimated';
 import { FlashList, type ListRenderItem } from '@shopify/flash-list';
 
@@ -49,7 +49,7 @@ export default function InfiniteParallaxGrid<T>({
   const backgroundColor = useThemeColor({}, 'background');
   const colorScheme = useColorScheme() ?? 'light';
   const scrollRef = useAnimatedRef<any>();
-  const scrollOffset = useScrollViewOffset(scrollRef);
+  const scrollOffset = useScrollOffset(scrollRef);
 
   // Calculate item size for grid layout
   const { width: screenWidth } = Dimensions.get('window');
