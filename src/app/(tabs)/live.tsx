@@ -1,6 +1,6 @@
+import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { useRouter } from 'expo-router';
 
 import { LiveTopBar } from '@/components/domain/live/live-top-bar';
 import InfiniteParallaxGrid from '@/components/ui/containers/infinite-parallax-grid';
@@ -198,10 +198,6 @@ export default function LiveScreen() {
         }
         ListHeaderComponentAfterParallax={
           <ThemedView style={styles.contentContainer}>
-            <ThemedView style={styles.titleContainer}>
-              <ThemedText type="title">Live TV</ThemedText>
-            </ThemedView>
-
             <LiveTopBar
               groups={groups}
               selectedGroupName={selectedGroupName}
