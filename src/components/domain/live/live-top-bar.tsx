@@ -52,7 +52,6 @@ const styles = StyleSheet.create({
   container: {
     paddingTop: 8,
     paddingBottom: 12,
-    paddingHorizontal: 16,
   },
   content: {
     flexDirection: 'column',
@@ -69,7 +68,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    height: 36,
+    minHeight: 24,
     fontSize: 14,
   },
 });
