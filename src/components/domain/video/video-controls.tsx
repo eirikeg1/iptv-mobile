@@ -10,6 +10,7 @@ interface VideoControlsProps {
   channel: Channel;
   player: VideoPlayer;
   isLoading: boolean;
+  isPlaying: boolean;
   onBack?: () => void;
   onTogglePlayPause: () => void;
   onClearTimeout: () => void;
@@ -19,6 +20,7 @@ export function VideoControls({
   channel,
   player,
   isLoading,
+  isPlaying,
   onBack,
   onTogglePlayPause,
   onClearTimeout,
@@ -83,10 +85,10 @@ export function VideoControls({
             }}
             onPress={onTogglePlayPause}
             accessibilityRole="button"
-            accessibilityLabel={player.playing ? 'Pause' : 'Play'}
+            accessibilityLabel={isPlaying ? 'Pause' : 'Play'}
           >
             <IconSymbol
-              name={player.playing ? 'pause.fill' : 'play.fill'}
+              name={isPlaying ? 'pause.fill' : 'play.fill'}
               size={48}
               color={iconColor}
             />

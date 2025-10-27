@@ -15,6 +15,7 @@ export function useVideoPlayerLogic({ channel, onStopVideo, onRegisterStopFuncti
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [showControls, setShowControls] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const hideControlsTimeoutRef = useRef<number | null>(null);
   const isUnmountedRef = useRef(false);
@@ -47,6 +48,7 @@ export function useVideoPlayerLogic({ channel, onStopVideo, onRegisterStopFuncti
     try {
       if (!isUnmountedRef.current && player) {
         player.pause();
+        setIsPlaying(false);
       }
     } catch (error) {
       console.warn('Error stopping video:', error);
@@ -59,6 +61,7 @@ export function useVideoPlayerLogic({ channel, onStopVideo, onRegisterStopFuncti
     setHasError(false);
     setIsLoading(true);
     setShowControls(false);
+    setIsPlaying(false);
     clearHideControlsTimeout();
     player.replay();
   }, [player, clearHideControlsTimeout]);
@@ -66,17 +69,19 @@ export function useVideoPlayerLogic({ channel, onStopVideo, onRegisterStopFuncti
   const togglePlayPause = useCallback(() => {
     try {
       if (!isUnmountedRef.current && player) {
-        if (player.playing) {
+        if (isPlaying) {
           player.pause();
+          setIsPlaying(false);
         } else {
           player.play();
+          setIsPlaying(true);
         }
       }
     } catch (error) {
       console.warn('Error toggling play/pause:', error);
     }
     scheduleHideControls();
-  }, [player, scheduleHideControls]);
+  }, [player, isPlaying, scheduleHideControls]);
 
   useEffect(() => {
     const subscription = player.addListener('statusChange', ({ status, error }) => {
@@ -84,6 +89,7 @@ export function useVideoPlayerLogic({ channel, onStopVideo, onRegisterStopFuncti
         setIsLoading(false);
         setHasError(false);
         player.play();
+        setIsPlaying(true);
         setShowControls(true);
         scheduleHideControls();
       } else if (status === 'error' || error) {
@@ -119,6 +125,7 @@ export function useVideoPlayerLogic({ channel, onStopVideo, onRegisterStopFuncti
         try {
           if (!isUnmountedRef.current && player) {
             player.pause();
+            setIsPlaying(false);
           }
         } catch (error) {
           console.warn('Error pausing video on focus loss:', error);
@@ -145,5 +152,6 @@ export function useVideoPlayerLogic({ channel, onStopVideo, onRegisterStopFuncti
     retryPlayback,
     togglePlayPause,
     clearHideControlsTimeout,
+    isPlaying,
   };
 }

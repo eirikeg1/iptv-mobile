@@ -23,6 +23,7 @@ export function VideoPlayer({ channel, onBack, onStopVideo, onRegisterStopFuncti
     retryPlayback,
     togglePlayPause,
     clearHideControlsTimeout,
+    isPlaying,
   } = useVideoPlayerLogic({
     channel,
     onStopVideo,
@@ -49,6 +50,7 @@ export function VideoPlayer({ channel, onBack, onStopVideo, onRegisterStopFuncti
             channel={channel}
             player={player}
             isLoading={isLoading}
+            isPlaying={isPlaying}
             onBack={onBack}
             onTogglePlayPause={togglePlayPause}
             onClearTimeout={clearHideControlsTimeout}
