@@ -4,7 +4,8 @@ import { View } from 'react-native';
 import type { Channel } from '@/types/playlist.types';
 import { useVideoPlayerLogic } from './hooks/use-video-player';
 import { VideoControls, VideoTapOverlay } from './video-controls';
-import { VideoErrorState, VideoLoadingState } from './video-states';
+import { VideoErrorState } from './video-states';
+import { LoadingProgress } from './loading-progress';
 
 interface VideoPlayerProps {
   channel: Channel;
@@ -17,13 +18,18 @@ export function VideoPlayer({ channel, onBack, onStopVideo, onRegisterStopFuncti
   const {
     player,
     isLoading,
+    loadingStage,
+    loadingProgress,
     hasError,
+    videoError,
     showControls,
     showControlsTemporarily,
     retryPlayback,
     togglePlayPause,
     clearHideControlsTimeout,
     isPlaying,
+    networkState,
+    retryState,
   } = useVideoPlayerLogic({
     channel,
     onStopVideo,
@@ -43,8 +49,22 @@ export function VideoPlayer({ channel, onBack, onStopVideo, onRegisterStopFuncti
           contentFit="contain"
         />
 
-        {isLoading && <VideoLoadingState channel={channel} />}
-        {hasError && <VideoErrorState channel={channel} onRetry={retryPlayback} />}
+        {isLoading && (
+          <LoadingProgress
+            channel={channel}
+            stage={loadingStage}
+            progress={loadingProgress}
+            networkType={networkState.type}
+          />
+        )}
+        {hasError && videoError && (
+          <VideoErrorState
+            channel={channel}
+            error={videoError}
+            onRetry={retryPlayback}
+            isRetrying={retryState.isRetrying}
+          />
+        )}
         {showControls && !hasError && (
           <VideoControls
             channel={channel}
