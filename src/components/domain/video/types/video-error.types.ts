@@ -2,6 +2,53 @@
  * Video error types and handling utilities
  */
 
+/**
+ * Base error interface following expo-video PlayerError spec
+ */
+export interface PlayerError {
+  message: string;
+}
+
+/**
+ * Extended error interface for network and platform errors
+ * that may include additional properties
+ */
+export interface ExtendedPlayerError extends PlayerError {
+  code?: string;
+  name?: string;
+  stack?: string;
+}
+
+/**
+ * Union type representing all possible error inputs
+ */
+export type RawVideoError =
+  | PlayerError
+  | ExtendedPlayerError
+  | Error
+  | string
+  | null
+  | undefined;
+
+/**
+ * Type guard to check if error is a PlayerError-like object
+ */
+export function isPlayerErrorLike(error: unknown): error is PlayerError {
+  return typeof error === 'object' &&
+         error !== null &&
+         'message' in error &&
+         typeof (error as PlayerError).message === 'string';
+}
+
+/**
+ * Type guard to check if error has a code property
+ */
+export function hasErrorCode(error: unknown): error is ExtendedPlayerError {
+  return isPlayerErrorLike(error) &&
+         'code' in error &&
+         typeof (error as ExtendedPlayerError).code === 'string';
+}
+
 export enum VideoErrorType {
   NETWORK_ERROR = 'NETWORK_ERROR',
   STREAM_UNAVAILABLE = 'STREAM_UNAVAILABLE',
@@ -28,11 +75,45 @@ export interface RetryState {
 }
 
 /**
+ * Safely extract error message from various error types
+ */
+function extractErrorMessage(error: RawVideoError): string {
+  if (typeof error === 'string') {
+    return error;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  if (isPlayerErrorLike(error)) {
+    return error.message;
+  }
+
+  return '';
+}
+
+/**
+ * Safely extract error code from error object
+ */
+function extractErrorCode(error: RawVideoError): string {
+  if (hasErrorCode(error)) {
+    return error.code || '';
+  }
+
+  if (error instanceof Error && 'code' in error) {
+    return String((error as Error & { code: unknown }).code) || '';
+  }
+
+  return '';
+}
+
+/**
  * Get user-friendly error information based on error type and details
  */
-export function getVideoErrorInfo(error: any, retryAttempt: number = 0): VideoError {
-  const errorMessage = error?.message || error || '';
-  const errorCode = error?.code || '';
+export function getVideoErrorInfo(error: RawVideoError, retryAttempt: number = 0): VideoError {
+  const errorMessage = extractErrorMessage(error);
+  const errorCode = extractErrorCode(error);
 
   // Network-related errors
   if (errorMessage.includes('network') || errorMessage.includes('fetch') || errorCode === 'NETWORK_FAILURE') {

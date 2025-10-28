@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { Alert } from 'react-native';
 import { useVideoErrorStore } from '@/states/video/error-store';
-import { getVideoErrorInfo, calculateRetryDelay } from '../../types/video-error.types';
+import { getVideoErrorInfo, calculateRetryDelay, type RawVideoError } from '../../types/video-error.types';
 
 export function useVideoErrorHandling() {
   const {
@@ -15,7 +15,7 @@ export function useVideoErrorHandling() {
     resetRetryState,
   } = useVideoErrorStore();
 
-  const handleError = useCallback((rawError: any) => {
+  const handleError = useCallback((rawError: RawVideoError) => {
     const enhancedError = getVideoErrorInfo(rawError, retryState.attempt);
     setError(enhancedError);
 

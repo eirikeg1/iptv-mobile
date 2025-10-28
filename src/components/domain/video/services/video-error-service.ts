@@ -1,12 +1,12 @@
 import { Alert } from 'react-native';
-import type { VideoError, VideoErrorType } from '../types/video-error.types';
+import type { VideoError, VideoErrorType, RawVideoError } from '../types/video-error.types';
 import { getVideoErrorInfo, isRetryableError } from '../types/video-error.types';
 
 export class VideoErrorService {
   /**
    * Process raw error and return enhanced error info
    */
-  static processError(rawError: any, retryAttempt: number = 0): VideoError {
+  static processError(rawError: RawVideoError, retryAttempt: number = 0): VideoError {
     return getVideoErrorInfo(rawError, retryAttempt);
   }
 
@@ -32,7 +32,7 @@ export class VideoErrorService {
    * Handle error with appropriate user feedback
    */
   static handleError(
-    rawError: any,
+    rawError: RawVideoError,
     retryAttempt: number = 0,
     maxRetries: number = 3
   ): VideoError {
