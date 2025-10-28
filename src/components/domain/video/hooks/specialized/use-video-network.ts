@@ -24,9 +24,9 @@ export function useVideoNetwork() {
       return network;
     } catch (error) {
       console.warn('Failed to check network connectivity:', error);
-      return networkState; // Return current state if check fails
+      return useVideoNetworkStore.getState().networkState; // Return current state if check fails
     }
-  }, [setNetworkState, networkState]);
+  }, [setNetworkState]);
 
   const startNetworkMonitoring = useCallback(() => {
     if (isMonitoring) return;
@@ -79,7 +79,8 @@ export function useVideoNetwork() {
       setUnsubscribe(null);
       setIsMonitoring(false);
     };
-  }, []); // Empty deps - only run on mount/unmount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps - only run on mount/unmount. Zustand setters are stable.
 
   return {
     networkState,
