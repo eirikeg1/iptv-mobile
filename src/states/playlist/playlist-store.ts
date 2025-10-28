@@ -163,7 +163,7 @@ export const usePlaylistStore = create<PlaylistState>((set, get) => ({
     set({ activePlaylistId: id, error: null });
 
     // Also save to current user's settings
-    const { useUserStore } = await import('./user-store');
+    const { useUserStore } = await import('../user/user-store');
     const currentUser = useUserStore.getState().currentUser;
     if (currentUser) {
       try {
@@ -270,7 +270,7 @@ export const usePlaylistStore = create<PlaylistState>((set, get) => ({
       // Load active playlist from current user's settings
       let activePlaylistId: string | null = null;
       try {
-        const { useUserStore } = await import('./user-store');
+        const { useUserStore } = await import('../user/user-store');
         const currentUser = useUserStore.getState().currentUser;
         if (currentUser?.settings?.activePlaylistId) {
           // Check if the saved playlist still exists

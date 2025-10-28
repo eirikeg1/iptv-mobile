@@ -2,7 +2,7 @@ import { IconSymbol } from '@/components/ui/display/icon-symbol';
 import { ThemedText } from '@/components/ui/display/themed-text';
 import { ThemedView } from '@/components/ui/display/themed-view';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { usePlaylistStore } from '@/states/playlist-store';
+import { usePlaylistStore } from '@/states/playlist/playlist-store';
 import type { Channel } from '@/types/playlist.types';
 import { memo, useCallback, useMemo } from 'react';
 import { FlatList, Image, StyleSheet, TouchableOpacity, View } from 'react-native';

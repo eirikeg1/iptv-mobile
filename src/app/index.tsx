@@ -1,6 +1,6 @@
 import { View, ActivityIndicator, Text } from 'react-native';
 import { Redirect } from 'expo-router';
-import { useUserStore } from '@/states/user-store';
+import { useUserStore } from '@/states/user/user-store';
 
 /**
  * Root index - redirects to user-select or tabs based on user state

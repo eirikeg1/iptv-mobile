@@ -14,6 +14,9 @@ interface VideoPlayerProps {
   onRegisterStopFunction?: (stopFn: () => void) => void;
 }
 
+/**
+ * Video player component with clean, modular state management architecture
+ */
 export function VideoPlayer({ channel, onBack, onStopVideo, onRegisterStopFunction }: VideoPlayerProps) {
   const {
     player,
@@ -35,7 +38,6 @@ export function VideoPlayer({ channel, onBack, onStopVideo, onRegisterStopFuncti
     onStopVideo,
     onRegisterStopFunction,
   });
-
 
   return (
     <View style={{ flex: 1, backgroundColor: '#000' }}>

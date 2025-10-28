@@ -124,7 +124,7 @@ export const useUserStore = create<UserState>((set, get) => ({
 
       // Reload playlist store to get the correct active playlist for this user
       try {
-        const { usePlaylistStore } = await import('./playlist-store');
+        const { usePlaylistStore } = await import('../playlist/playlist-store');
         await usePlaylistStore.getState().loadPlaylists();
       } catch (error) {
         console.error('[UserStore] Failed to reload playlists after user switch:', error);
