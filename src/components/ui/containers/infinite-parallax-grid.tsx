@@ -53,6 +53,11 @@ export default function InfiniteParallaxGrid<T>({
   const backgroundColor = useThemeColor({}, 'background');
   const tintColor = useThemeColor({}, 'tint');
   const colorScheme = useColorScheme() ?? 'light';
+
+  // Arrow color (dark arrow for light theme, theme color for dark theme)
+  const refreshArrowColor = colorScheme === 'dark' ? tintColor : '#333333';
+  // Background color (light gray for light theme, dark for dark theme)
+  const refreshBackgroundColor = colorScheme === 'dark' ? '#444444' : '#E5E5E5';
   const scrollRef = useAnimatedRef<any>();
   const scrollOffset = useScrollOffset(scrollRef);
 
@@ -139,8 +144,9 @@ export default function InfiniteParallaxGrid<T>({
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor={tintColor}
-              colors={[tintColor]}
+              tintColor={refreshArrowColor}
+              colors={[refreshArrowColor]}
+              progressBackgroundColor={refreshBackgroundColor}
             />
           ) : undefined
         }

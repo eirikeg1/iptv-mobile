@@ -9,10 +9,11 @@ interface FavoriteStarProps {
   channelId: string;
   channelName: string;
   size?: number;
+  initialIsFavorite?: boolean;
 }
 
-export function FavoriteStar({ channelId, channelName, size = 16 }: FavoriteStarProps) {
-  const [isFavorite, setIsFavorite] = useState(false);
+export function FavoriteStar({ channelId, channelName, size = 16, initialIsFavorite }: FavoriteStarProps) {
+  const [isFavorite, setIsFavorite] = useState(initialIsFavorite ?? false);
   const [isLoading, setIsLoading] = useState(false);
 
   const currentUser = useUserStore((state) => state.currentUser);
@@ -50,8 +51,11 @@ export function FavoriteStar({ channelId, channelName, size = 16 }: FavoriteStar
   }, [currentUser, channelId, isFavorite, isLoading, toggleFavorite]);
 
   useEffect(() => {
-    loadFavoriteStatus();
-  }, [loadFavoriteStatus]);
+    // Only load from database if initial favorite status wasn't provided
+    if (initialIsFavorite === undefined) {
+      loadFavoriteStatus();
+    }
+  }, [loadFavoriteStatus, initialIsFavorite]);
 
   if (!currentUser) return null;
 

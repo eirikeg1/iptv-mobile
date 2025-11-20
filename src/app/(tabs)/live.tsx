@@ -25,6 +25,7 @@ export default function LiveScreen() {
   const [hasLoadedPlaylist, setHasLoadedPlaylist] = useState<boolean>(false);
   const [hasLoadedFavorites, setHasLoadedFavorites] = useState<boolean>(false);
   const isInitialMount = useRef(true);
+  const isMountedRef = useRef(true);
 
   const router = useRouter();
   const getActivePlaylist = usePlaylistStore((state) => state.getActivePlaylist);
@@ -34,6 +35,14 @@ export default function LiveScreen() {
 
   const iconColor = useThemeColor({}, 'icon');
   const tintColor = useThemeColor({}, 'tint');
+  const backgroundColor = useThemeColor({}, 'background');
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // Load playlist data after component mounts to avoid blocking navigation
   useEffect(() => {
@@ -55,6 +64,8 @@ export default function LiveScreen() {
 
   // Function to load favorites
   const loadFavorites = useCallback(async (isTabClick: boolean = false) => {
+    if (!isMountedRef.current) return;
+
     if (isTabClick) {
       setIsInitialLoading(true);
     }
@@ -67,25 +78,35 @@ export default function LiveScreen() {
           await migrateFavoritesToNewFormat(currentUser.id, channels);
         }
 
+        if (!isMountedRef.current) return;
+
         const favorites = await getFavoriteChannels(currentUser.id);
         console.log('[LiveScreen] Loaded', favorites.length, 'favorite channels:', favorites);
+
+        if (!isMountedRef.current) return;
         setFavoriteChannels(favorites);
       } catch (error) {
+        if (!isMountedRef.current) return;
         console.error('Error loading favorite channels:', error);
       }
     } else {
+      if (!isMountedRef.current) return;
       setFavoriteChannels([]);
     }
 
+    if (!isMountedRef.current) return;
     setHasLoadedFavorites(true);
     setIsInitialLoading(false);
   }, [currentUser, getFavoriteChannels, migrateFavoritesToNewFormat, activePlaylist?.parsedData?.items]);
 
   // Refresh function for pull-to-refresh
   const handleRefresh = useCallback(async () => {
+    if (!isMountedRef.current) return;
     setIsRefreshing(true);
     await loadFavorites();
-    setIsRefreshing(false);
+    if (isMountedRef.current) {
+      setIsRefreshing(false);
+    }
   }, [loadFavorites]);
 
   // Load favorite channels when playlist is available and user changes
@@ -107,12 +128,25 @@ export default function LiveScreen() {
         return;
       }
 
+      let timeoutId: ReturnType<typeof setTimeout>;
+
       // Use setTimeout to make this truly non-blocking
-      setTimeout(() => {
-        loadFavorites(true).catch((error) => {
-          console.error('Error reloading favorites on focus:', error);
-        });
+      timeoutId = setTimeout(() => {
+        if (isMountedRef.current) {
+          loadFavorites(true).catch((error) => {
+            if (isMountedRef.current) {
+              console.error('Error reloading favorites on focus:', error);
+            }
+          });
+        }
       }, 0);
+
+      // Cleanup function to cancel pending operations when focus changes
+      return () => {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+      };
     }, [loadFavorites])
   );
 
@@ -225,6 +259,12 @@ export default function LiveScreen() {
     const hasLogo = !!channel.tvg.logo;
     const initial = getChannelInitial(channel.name);
 
+    // Check if channel is favorite using existing favorite channels data
+    const channelId = getChannelId(channel);
+    const isChannelFavorite = favoriteChannels.includes(channelId) ||
+                             favoriteChannels.includes(`${channel.name}|${channel.url}`) ||
+                             favoriteChannels.includes(channel.name);
+
     return (
       <View style={styles.channelItem}>
         <TouchableOpacity
@@ -267,14 +307,15 @@ export default function LiveScreen() {
 
         <View style={styles.favoriteContainer}>
           <FavoriteStar
-            channelId={getChannelId(channel)}
+            channelId={channelId}
             channelName={channel.name}
             size={16}
+            initialIsFavorite={isChannelFavorite}
           />
         </View>
       </View>
     );
-  }, [handleChannelPress]);
+  }, [handleChannelPress, favoriteChannels]);
 
   const EmptyComponent = () => {
     const isSearching = searchText.trim().length > 0;
@@ -314,7 +355,7 @@ export default function LiveScreen() {
   // Show full page loading spinner if playlist or favorites haven't loaded yet
   if (!hasLoadedPlaylist || !hasLoadedFavorites) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor }]}>
         <InfiniteParallaxGrid
           data={[]}
           renderItem={renderChannelItem}
@@ -329,7 +370,7 @@ export default function LiveScreen() {
             />
           }
           ListHeaderComponentAfterParallax={
-            <ThemedView style={styles.contentContainer}>
+            <ThemedView style={[styles.contentContainer, styles.gridBackground]}>
               <LiveTopBar
                 groups={groups}
                 selectedGroupName={selectedGroupName}
@@ -351,7 +392,7 @@ export default function LiveScreen() {
   // Show no playlist message only when we've confirmed there's no playlist
   if (!activePlaylist) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor }]}>
         <ThemedView style={styles.emptyContainer}>
           <IconSymbol name="tv" size={64} color={iconColor} />
           <ThemedText style={styles.emptyTitle}>
@@ -367,7 +408,7 @@ export default function LiveScreen() {
 
   // Show channels with full functionality
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor }]}>
       <InfiniteParallaxGrid
         data={filteredChannels}
         renderItem={renderChannelItem}
@@ -382,7 +423,7 @@ export default function LiveScreen() {
           />
         }
         ListHeaderComponentAfterParallax={
-          <ThemedView style={styles.contentContainer}>
+          <ThemedView style={[styles.contentContainer, styles.gridBackground]}>
             <LiveTopBar
               groups={groups}
               selectedGroupName={selectedGroupName}
@@ -482,5 +523,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 50,
     minHeight: 200,
+  },
+  gridBackground: {
+    flex: 1,
+    minHeight: '100%',
   },
 });
