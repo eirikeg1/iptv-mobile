@@ -10,6 +10,7 @@ import type {
   UpdateUserInput,
 } from '@/types/user.types';
 import { DEFAULT_USER_SETTINGS } from '@/types/user.types';
+import { getChannelId } from '@/lib/channel-utils';
 import { executeQuery, executeQuerySingle, executeStatement, executeTransaction } from './sqlite-client';
 import { randomUUID } from 'expo-crypto';
 
@@ -55,6 +56,9 @@ export interface IUserRepository {
   savePlaybackPosition(userId: string, channelId: string, position: number, totalDuration: number): Promise<void>;
   getPlaybackPosition(userId: string, channelId: string): Promise<UserPlaybackPosition | null>;
   clearPlaybackPosition(userId: string, channelId: string): Promise<void>;
+
+  // Migration helper
+  migrateFavoritesToNewFormat(userId: string, channels: { name: string; url: string; tvg?: { id?: string } }[]): Promise<void>;
 }
 
 /**
@@ -508,6 +512,50 @@ class SQLiteUserRepository implements IUserRepository {
       'DELETE FROM user_playback_position WHERE userId = ? AND channelId = ?',
       [userId, channelId]
     );
+  }
+
+  async migrateFavoritesToNewFormat(userId: string, channels: { name: string; url: string; tvg?: { id?: string } }[]): Promise<void> {
+    console.log('[UserRepository] migrateFavoritesToNewFormat called for user:', userId);
+
+    const favorites = await this.getFavoriteChannels(userId);
+    const channelMap = new Map<string, string>();
+
+    // Create mapping from old formats to new tvg.id based format
+    channels.forEach(channel => {
+      const newChannelId = getChannelId(channel as any);
+
+      // Map from old name-only format
+      channelMap.set(channel.name, newChannelId);
+
+      // Map from old name|url format
+      const oldNameUrlFormat = `${channel.name}|${channel.url}`;
+      channelMap.set(oldNameUrlFormat, newChannelId);
+    });
+
+    let migratedCount = 0;
+    for (const favoriteId of favorites) {
+      // Check if this favorite needs migration
+      if (channelMap.has(favoriteId)) {
+        const newChannelId = channelMap.get(favoriteId)!;
+
+        // Only migrate if the new ID is different
+        if (newChannelId !== favoriteId) {
+          try {
+            // Remove old favorite
+            await this.removeFavoriteChannel(userId, favoriteId);
+            // Add new favorite with proper format
+            await this.addFavoriteChannel(userId, newChannelId);
+            migratedCount++;
+          } catch (error) {
+            console.error('[UserRepository] Error migrating favorite:', favoriteId, error);
+          }
+        }
+      }
+    }
+
+    if (migratedCount > 0) {
+      console.log(`[UserRepository] Migrated ${migratedCount} favorites to new format`);
+    }
   }
 }
 

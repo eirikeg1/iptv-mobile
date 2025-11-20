@@ -36,10 +36,12 @@ export function FavoriteStar({ channelId, channelName, size = 16 }: FavoriteStar
   const handleToggle = useCallback(async () => {
     if (!currentUser || isLoading) return;
 
+    console.log('[FavoriteStar] Toggling favorite for:', channelId, 'Current state:', isFavorite);
     setIsLoading(true);
     try {
       await toggleFavorite(currentUser.id, channelId);
       setIsFavorite(!isFavorite);
+      console.log('[FavoriteStar] Successfully toggled favorite to:', !isFavorite);
     } catch (error) {
       console.error('[FavoriteStar] Error toggling favorite:', error);
     } finally {

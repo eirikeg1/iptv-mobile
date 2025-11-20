@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import { LiveTopBar } from '@/components/domain/live/live-top-bar';
@@ -10,17 +10,48 @@ import { ThemedText } from '@/components/ui/display/themed-text';
 import { ThemedView } from '@/components/ui/display/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { usePlaylistStore } from '@/states/playlist/playlist-store';
+import { useUserStore } from '@/states/user/user-store';
+import { getChannelId } from '@/lib/channel-utils';
 import type { Channel } from '@/types/playlist.types';
 import type { ListRenderItemInfo } from '@shopify/flash-list';
 
 export default function LiveScreen() {
   const [selectedGroupName, setSelectedGroupName] = useState<string>('');
   const [searchText, setSearchText] = useState<string>('');
+  const [favoriteChannels, setFavoriteChannels] = useState<string[]>([]);
 
   const router = useRouter();
   const activePlaylist = usePlaylistStore((state) => state.getActivePlaylist());
+  const currentUser = useUserStore((state) => state.currentUser);
+  const getFavoriteChannels = useUserStore((state) => state.getFavoriteChannels);
+  const migrateFavoritesToNewFormat = useUserStore((state) => state.migrateFavoritesToNewFormat);
 
   const iconColor = useThemeColor({}, 'icon');
+
+  // Load favorite channels when user changes
+  useEffect(() => {
+    const loadFavorites = async () => {
+      if (currentUser) {
+        try {
+          // Migrate old favorites if needed
+          const channels = activePlaylist?.parsedData?.items || [];
+          if (channels.length > 0) {
+            await migrateFavoritesToNewFormat(currentUser.id, channels);
+          }
+
+          const favorites = await getFavoriteChannels(currentUser.id);
+          console.log('[LiveScreen] Loaded', favorites.length, 'favorite channels:', favorites);
+          setFavoriteChannels(favorites);
+        } catch (error) {
+          console.error('Error loading favorite channels:', error);
+        }
+      } else {
+        setFavoriteChannels([]);
+      }
+    };
+
+    loadFavorites();
+  }, [currentUser, getFavoriteChannels, migrateFavoritesToNewFormat, activePlaylist?.parsedData?.items]);
 
   // Calculate filtered channels for infinite grid
   const filteredChannels = useMemo(() => {
@@ -42,8 +73,39 @@ export default function LiveScreen() {
       );
     }
 
+
+    // Sort channels - always prioritize favorites first, then by name
+    if (favoriteChannels.length > 0) {
+      let favoriteMatches = 0;
+      channels = channels.sort((a, b) => {
+        const aChannelId = getChannelId(a);
+        const bChannelId = getChannelId(b);
+
+        // Check both old formats and new format for backward compatibility
+        const aIsFavorite = favoriteChannels.includes(aChannelId) ||
+                           favoriteChannels.includes(`${a.name}|${a.url}`) ||
+                           favoriteChannels.includes(a.name);
+        const bIsFavorite = favoriteChannels.includes(bChannelId) ||
+                           favoriteChannels.includes(`${b.name}|${b.url}`) ||
+                           favoriteChannels.includes(b.name);
+
+        if (aIsFavorite) favoriteMatches++;
+        if (bIsFavorite && !aIsFavorite) favoriteMatches++;
+
+        if (aIsFavorite && !bIsFavorite) return -1;
+        if (!aIsFavorite && bIsFavorite) return 1;
+
+        // If both are favorites or both are not favorites, sort by name
+        return a.name.localeCompare(b.name);
+      });
+      console.log(`[LiveScreen] Found ${favoriteMatches} favorite channels in current view`);
+    } else {
+      // No favorites - just sort by name
+      channels = channels.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
     return channels;
-  }, [activePlaylist, selectedGroupName, searchText]);
+  }, [activePlaylist, selectedGroupName, searchText, favoriteChannels]);
 
   // Calculate available groups
   const groups = useMemo(() => {
@@ -142,7 +204,7 @@ export default function LiveScreen() {
 
         <View style={styles.favoriteContainer}>
           <FavoriteStar
-            channelId={channel.name}
+            channelId={getChannelId(channel)}
             channelName={channel.name}
             size={16}
           />

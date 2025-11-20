@@ -39,6 +39,9 @@ interface UserState {
 
   // Utility actions
   clearError: () => void;
+
+  // Migration helper
+  migrateFavoritesToNewFormat: (userId: string, channels: { name: string; url: string; tvg?: { id?: string } }[]) => Promise<void>;
 }
 
 export const useUserStore = create<UserState>((set, get) => ({
@@ -328,5 +331,10 @@ export const useUserStore = create<UserState>((set, get) => ({
   // Clear error
   clearError: () => {
     set({ error: null });
+  },
+
+  // Migrate favorites to new format
+  migrateFavoritesToNewFormat: async (userId: string, channels: { name: string; url: string; tvg?: { id?: string } }[]) => {
+    await userRepository.migrateFavoritesToNewFormat(userId, channels);
   },
 }));

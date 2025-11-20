@@ -1,4 +1,5 @@
 import parser from 'iptv-playlist-parser';
+import { getRawChannelId } from '@/lib/channel-utils';
 import type { ParsedPlaylist, PlaylistCredentials } from '@/types/playlist.types';
 
 // HTTP Status codes
@@ -110,6 +111,25 @@ export class PlaylistService {
         hasItems: !!parsed?.items,
         itemsCount: parsed?.items?.length,
       });
+
+      // Deduplicate channels at the source
+      if (parsed?.items && Array.isArray(parsed.items)) {
+        const originalCount = parsed.items.length;
+        const seenChannels = new Map<string, any>();
+
+        parsed.items = parsed.items.filter((item: any) => {
+          const channelId = getRawChannelId(item);
+          if (seenChannels.has(channelId)) {
+            return false;
+          }
+          seenChannels.set(channelId, item);
+          return true;
+        });
+
+        if (originalCount !== parsed.items.length) {
+          console.log(`[PlaylistService] Removed ${originalCount - parsed.items.length} duplicate channels during parsing`);
+        }
+      }
 
       if (!parsed) {
         console.error('[PlaylistService] Parser returned null/undefined');

@@ -22,7 +22,7 @@ export interface UserSettings {
   defaultQuality: 'auto' | 'low' | 'high';
   defaultSubtitles: 'off' | 'on';
   activePlaylistId?: string;
-  channelSortBy: 'name' | 'recent' | 'custom' | 'mostWatched';
+  channelSortBy: 'name' | 'recent' | 'custom' | 'mostWatched' | 'favorites';
   parentalControlEnabled: boolean;
   parentalControlPin?: string;
 }
