@@ -167,12 +167,12 @@ class SQLiteUserRepository implements IUserRepository {
       'SELECT * FROM users ORDER BY createdAt ASC'
     );
 
-    const users = await Promise.all(
-      rows.map(async (row) => {
-        const settings = await this.getUserSettings(row.id);
-        return this.rowToUser(row, settings || undefined);
-      })
-    );
+    // Process users sequentially to avoid database locking issues
+    const users: User[] = [];
+    for (const row of rows) {
+      const settings = await this.getUserSettings(row.id);
+      users.push(this.rowToUser(row, settings || undefined));
+    }
 
     console.log('[UserRepository] Found', users.length, 'users');
     return users;

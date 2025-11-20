@@ -63,10 +63,6 @@ export const useUserStore = create<UserState>((set, get) => ({
       // Set current user to first user if exists
       const firstUser = users[0] || null;
 
-      if (firstUser) {
-        await userRepository.updateLastActive(firstUser.id);
-      }
-
       set({
         users,
         currentUser: firstUser,
