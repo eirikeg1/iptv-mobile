@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import { LiveTopBar } from '@/components/domain/live/live-top-bar';
+import { FavoriteStar } from '@/components/domain/live/favorite-star';
 import InfiniteParallaxGrid from '@/components/ui/containers/infinite-parallax-grid';
 import { IconSymbol } from '@/components/ui/display/icon-symbol';
 import { ThemedText } from '@/components/ui/display/themed-text';
@@ -100,43 +101,53 @@ export default function LiveScreen() {
     const initial = getChannelInitial(channel.name);
 
     return (
-      <TouchableOpacity
-        style={styles.channelItem}
-        onPress={() => handleChannelPress(channel)}
-        activeOpacity={0.7}
-        accessibilityRole="button"
-        accessibilityLabel={`${channel.name} channel`}
-        accessibilityHint="Tap to play this channel"
-      >
-        {hasLogo ? (
-          <Image
-            source={{ uri: channel.tvg.logo }}
-            style={styles.channelIcon}
-            resizeMode="contain"
-            onError={() => {
-              // Silently handle image load errors
-            }}
-          />
-        ) : (
-          <ThemedView
-            style={[
-              styles.channelIcon,
-              styles.fallbackIcon,
-            ]}
-          >
-            <ThemedText style={styles.fallbackText}>
-              {initial}
-            </ThemedText>
-          </ThemedView>
-        )}
-
-        <ThemedText
-          style={styles.channelName}
-          numberOfLines={2}
+      <View style={styles.channelItem}>
+        <TouchableOpacity
+          style={styles.channelButton}
+          onPress={() => handleChannelPress(channel)}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={`${channel.name} channel`}
+          accessibilityHint="Tap to play this channel"
         >
-          {channel.name}
-        </ThemedText>
-      </TouchableOpacity>
+          {hasLogo ? (
+            <Image
+              source={{ uri: channel.tvg.logo }}
+              style={styles.channelIcon}
+              resizeMode="contain"
+              onError={() => {
+                // Silently handle image load errors
+              }}
+            />
+          ) : (
+            <ThemedView
+              style={[
+                styles.channelIcon,
+                styles.fallbackIcon,
+              ]}
+            >
+              <ThemedText style={styles.fallbackText}>
+                {initial}
+              </ThemedText>
+            </ThemedView>
+          )}
+
+          <ThemedText
+            style={styles.channelName}
+            numberOfLines={2}
+          >
+            {channel.name}
+          </ThemedText>
+        </TouchableOpacity>
+
+        <View style={styles.favoriteContainer}>
+          <FavoriteStar
+            channelId={channel.name}
+            channelName={channel.name}
+            size={16}
+          />
+        </View>
+      </View>
     );
   }, [handleChannelPress]);
 
@@ -237,6 +248,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 4,
     flex: 1,
+    position: 'relative',
+  },
+  channelButton: {
+    alignItems: 'center',
+    width: '100%',
+  },
+  favoriteContainer: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    zIndex: 1,
   },
   channelIcon: {
     width: 48,
