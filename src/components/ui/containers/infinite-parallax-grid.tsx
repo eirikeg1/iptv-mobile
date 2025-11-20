@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import { Dimensions, StyleSheet } from 'react-native';
+import { Dimensions, RefreshControl, StyleSheet } from 'react-native';
 import Animated, {
   interpolate,
   useAnimatedRef,
@@ -30,6 +30,8 @@ interface InfiniteParallaxGridProps<T> {
   ListHeaderComponentAfterParallax?: ReactElement;
   padding?: number;
   gap?: number;
+  refreshing?: boolean;
+  onRefresh?: () => void;
 }
 
 export default function InfiniteParallaxGrid<T>({
@@ -45,8 +47,11 @@ export default function InfiniteParallaxGrid<T>({
   ListHeaderComponentAfterParallax,
   padding = DEFAULT_PADDING,
   gap = DEFAULT_GAP,
+  refreshing = false,
+  onRefresh,
 }: InfiniteParallaxGridProps<T>) {
   const backgroundColor = useThemeColor({}, 'background');
+  const tintColor = useThemeColor({}, 'tint');
   const colorScheme = useColorScheme() ?? 'light';
   const scrollRef = useAnimatedRef<any>();
   const scrollOffset = useScrollOffset(scrollRef);
@@ -129,6 +134,16 @@ export default function InfiniteParallaxGrid<T>({
         }}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          onRefresh ? (
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={tintColor}
+              colors={[tintColor]}
+            />
+          ) : undefined
+        }
       />
     </ThemedView>
   );

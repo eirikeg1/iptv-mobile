@@ -1,5 +1,5 @@
-import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import { LiveTopBar } from '@/components/domain/live/live-top-bar';
@@ -19,6 +19,8 @@ export default function LiveScreen() {
   const [selectedGroupName, setSelectedGroupName] = useState<string>('');
   const [searchText, setSearchText] = useState<string>('');
   const [favoriteChannels, setFavoriteChannels] = useState<string[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const isInitialMount = useRef(true);
 
   const router = useRouter();
   const activePlaylist = usePlaylistStore((state) => state.getActivePlaylist());
@@ -28,30 +30,52 @@ export default function LiveScreen() {
 
   const iconColor = useThemeColor({}, 'icon');
 
+  // Function to load favorites
+  const loadFavorites = useCallback(async () => {
+    if (currentUser) {
+      try {
+        // Migrate old favorites if needed
+        const channels = activePlaylist?.parsedData?.items || [];
+        if (channels.length > 0) {
+          await migrateFavoritesToNewFormat(currentUser.id, channels);
+        }
+
+        const favorites = await getFavoriteChannels(currentUser.id);
+        console.log('[LiveScreen] Loaded', favorites.length, 'favorite channels:', favorites);
+        setFavoriteChannels(favorites);
+      } catch (error) {
+        console.error('Error loading favorite channels:', error);
+      }
+    } else {
+      setFavoriteChannels([]);
+    }
+  }, [currentUser, getFavoriteChannels, migrateFavoritesToNewFormat, activePlaylist?.parsedData?.items]);
+
+  // Refresh function for pull-to-refresh
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    await loadFavorites();
+    setIsRefreshing(false);
+  }, [loadFavorites]);
+
   // Load favorite channels when user changes
   useEffect(() => {
-    const loadFavorites = async () => {
-      if (currentUser) {
-        try {
-          // Migrate old favorites if needed
-          const channels = activePlaylist?.parsedData?.items || [];
-          if (channels.length > 0) {
-            await migrateFavoritesToNewFormat(currentUser.id, channels);
-          }
-
-          const favorites = await getFavoriteChannels(currentUser.id);
-          console.log('[LiveScreen] Loaded', favorites.length, 'favorite channels:', favorites);
-          setFavoriteChannels(favorites);
-        } catch (error) {
-          console.error('Error loading favorite channels:', error);
-        }
-      } else {
-        setFavoriteChannels([]);
-      }
-    };
-
     loadFavorites();
-  }, [currentUser, getFavoriteChannels, migrateFavoritesToNewFormat, activePlaylist?.parsedData?.items]);
+  }, [loadFavorites]);
+
+  // Handle tab focus for reload functionality
+  useFocusEffect(
+    useCallback(() => {
+      // Don't reload on initial mount, only on subsequent focuses
+      if (isInitialMount.current) {
+        isInitialMount.current = false;
+        return;
+      }
+
+      // Reload favorites when tab is focused (clicked)
+      loadFavorites();
+    }, [loadFavorites])
+  );
 
   // Calculate filtered channels for infinite grid
   const filteredChannels = useMemo(() => {
@@ -282,6 +306,8 @@ export default function LiveScreen() {
         }
         columns={4}
         ListEmptyComponent={<EmptyComponent />}
+        refreshing={isRefreshing}
+        onRefresh={handleRefresh}
       />
     </View>
   );
