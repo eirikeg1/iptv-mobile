@@ -1,6 +1,6 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import { LiveTopBar } from '@/components/domain/live/live-top-bar';
 import { FavoriteStar } from '@/components/domain/live/favorite-star';
@@ -12,7 +12,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { usePlaylistStore } from '@/states/playlist/playlist-store';
 import { useUserStore } from '@/states/user/user-store';
 import { getChannelId } from '@/lib/channel-utils';
-import type { Channel } from '@/types/playlist.types';
+import type { Channel, Playlist } from '@/types/playlist.types';
 import type { ListRenderItemInfo } from '@shopify/flash-list';
 
 export default function LiveScreen() {
@@ -20,18 +20,45 @@ export default function LiveScreen() {
   const [searchText, setSearchText] = useState<string>('');
   const [favoriteChannels, setFavoriteChannels] = useState<string[]>([]);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const [isInitialLoading, setIsInitialLoading] = useState<boolean>(true);
+  const [activePlaylist, setActivePlaylist] = useState<Playlist | null>(null);
+  const [hasLoadedPlaylist, setHasLoadedPlaylist] = useState<boolean>(false);
+  const [hasLoadedFavorites, setHasLoadedFavorites] = useState<boolean>(false);
   const isInitialMount = useRef(true);
 
   const router = useRouter();
-  const activePlaylist = usePlaylistStore((state) => state.getActivePlaylist());
+  const getActivePlaylist = usePlaylistStore((state) => state.getActivePlaylist);
   const currentUser = useUserStore((state) => state.currentUser);
   const getFavoriteChannels = useUserStore((state) => state.getFavoriteChannels);
   const migrateFavoritesToNewFormat = useUserStore((state) => state.migrateFavoritesToNewFormat);
 
   const iconColor = useThemeColor({}, 'icon');
+  const tintColor = useThemeColor({}, 'tint');
+
+  // Load playlist data after component mounts to avoid blocking navigation
+  useEffect(() => {
+    const loadPlaylistData = () => {
+      try {
+        const playlist = getActivePlaylist();
+        setActivePlaylist(playlist);
+        setHasLoadedPlaylist(true);
+      } catch (error) {
+        console.error('Error loading playlist data:', error);
+        setActivePlaylist(null);
+        setHasLoadedPlaylist(true);
+      }
+    };
+
+    // Use setTimeout to defer this to after the component renders
+    setTimeout(loadPlaylistData, 0);
+  }, [getActivePlaylist]);
 
   // Function to load favorites
-  const loadFavorites = useCallback(async () => {
+  const loadFavorites = useCallback(async (isTabClick: boolean = false) => {
+    if (isTabClick) {
+      setIsInitialLoading(true);
+    }
+
     if (currentUser) {
       try {
         // Migrate old favorites if needed
@@ -49,6 +76,9 @@ export default function LiveScreen() {
     } else {
       setFavoriteChannels([]);
     }
+
+    setHasLoadedFavorites(true);
+    setIsInitialLoading(false);
   }, [currentUser, getFavoriteChannels, migrateFavoritesToNewFormat, activePlaylist?.parsedData?.items]);
 
   // Refresh function for pull-to-refresh
@@ -58,10 +88,15 @@ export default function LiveScreen() {
     setIsRefreshing(false);
   }, [loadFavorites]);
 
-  // Load favorite channels when user changes
+  // Load favorite channels when playlist is available and user changes
   useEffect(() => {
-    loadFavorites();
-  }, [loadFavorites]);
+    if (activePlaylist && hasLoadedPlaylist) {
+      loadFavorites();
+    } else if (hasLoadedPlaylist && !currentUser) {
+      // If no user, mark favorites as loaded immediately
+      setHasLoadedFavorites(true);
+    }
+  }, [activePlaylist, hasLoadedPlaylist, loadFavorites, currentUser]);
 
   // Handle tab focus for reload functionality
   useFocusEffect(
@@ -72,8 +107,12 @@ export default function LiveScreen() {
         return;
       }
 
-      // Reload favorites when tab is focused (clicked)
-      loadFavorites();
+      // Use setTimeout to make this truly non-blocking
+      setTimeout(() => {
+        loadFavorites(true).catch((error) => {
+          console.error('Error reloading favorites on focus:', error);
+        });
+      }, 0);
     }, [loadFavorites])
   );
 
@@ -262,6 +301,54 @@ export default function LiveScreen() {
     );
   };
 
+  const LoadingSpinner = () => {
+    if (!isInitialLoading) return null;
+
+    return (
+      <ThemedView style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={tintColor} />
+      </ThemedView>
+    );
+  };
+
+  // Show full page loading spinner if playlist or favorites haven't loaded yet
+  if (!hasLoadedPlaylist || !hasLoadedFavorites) {
+    return (
+      <View style={styles.container}>
+        <InfiniteParallaxGrid
+          data={[]}
+          renderItem={renderChannelItem}
+          keyExtractor={keyExtractor}
+          headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
+          headerImage={
+            <IconSymbol
+              size={310}
+              color="#808080"
+              name="play.tv"
+              style={styles.headerImage}
+            />
+          }
+          ListHeaderComponentAfterParallax={
+            <ThemedView style={styles.contentContainer}>
+              <LiveTopBar
+                groups={groups}
+                selectedGroupName={selectedGroupName}
+                onGroupSelect={handleGroupSelect}
+                searchText={searchText}
+                onSearchTextChange={handleSearchTextChange}
+              />
+            </ThemedView>
+          }
+          columns={4}
+          ListEmptyComponent={<LoadingSpinner />}
+          refreshing={isRefreshing}
+          onRefresh={handleRefresh}
+        />
+      </View>
+    );
+  }
+
+  // Show no playlist message only when we've confirmed there's no playlist
   if (!activePlaylist) {
     return (
       <View style={styles.container}>
@@ -278,6 +365,7 @@ export default function LiveScreen() {
     );
   }
 
+  // Show channels with full functionality
   return (
     <View style={styles.container}>
       <InfiniteParallaxGrid
@@ -387,5 +475,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
     lineHeight: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 50,
+    minHeight: 200,
   },
 });
