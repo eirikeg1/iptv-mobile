@@ -1,10 +1,10 @@
-import { useEffect, useCallback } from 'react';
 import { useVideoNetworkStore } from '@/states/video/network-store';
+import { useCallback, useEffect, useMemo } from 'react';
 import {
-  checkNetworkConnectivity,
-  subscribeToNetworkChanges,
-  isNetworkSuitableForStreaming,
-  getNetworkErrorMessage
+    checkNetworkConnectivity,
+    getNetworkErrorMessage,
+    isNetworkSuitableForStreaming,
+    subscribeToNetworkChanges
 } from '../../utils/network-utils';
 
 export function useVideoNetwork() {
@@ -82,15 +82,23 @@ export function useVideoNetwork() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty deps - only run on mount/unmount. Zustand setters are stable.
 
-  return {
+  const actions = useMemo(() => ({
+    checkNetwork,
+    startNetworkMonitoring,
+    stopNetworkMonitoring,
+  }), [checkNetwork, startNetworkMonitoring, stopNetworkMonitoring]);
+
+  return useMemo(() => ({
     networkState,
     isMonitoring,
     isNetworkSuitable: isNetworkSuitable(),
     networkError: getNetworkError(),
-    actions: {
-      checkNetwork,
-      startNetworkMonitoring,
-      stopNetworkMonitoring,
-    },
-  };
+    actions,
+  }), [
+    networkState,
+    isMonitoring,
+    isNetworkSuitable,
+    getNetworkError,
+    actions,
+  ]);
 }

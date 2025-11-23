@@ -89,8 +89,9 @@ export function useVideoOrchestrator({
     }
 
     console.log('Setting up video player status listener');
-    const subscription = playerState.player.addListener('statusChange', ({ status, error }) => {
+    const statusSubscription = playerState.player.addListener('statusChange', ({ status, error }) => {
       console.log('Video status change:', status, error);
+      
       if (status === 'loading') {
         console.log('Video loading - setting buffering stage');
         playerState.actions.setLoadingStage('buffering');
@@ -116,9 +117,15 @@ export function useVideoOrchestrator({
       }
     });
 
+    const playingSubscription = playerState.player.addListener('playingChange', ({ isPlaying }) => {
+      console.log('Video playing state changed:', isPlaying);
+      playerState.actions.setIsPlaying(isPlaying);
+    });
+
     return () => {
       console.log('Cleaning up video player status listener');
-      subscription?.remove();
+      statusSubscription?.remove();
+      playingSubscription?.remove();
     };
   }, [playerState.player]); // Only depend on the player itself, not the actions
 

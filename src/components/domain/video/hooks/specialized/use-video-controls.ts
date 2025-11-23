@@ -1,5 +1,5 @@
-import { useCallback } from 'react';
 import { useVideoUIStore } from '@/states/video/ui-store';
+import { useCallback, useMemo } from 'react';
 import { VIDEO_CONSTANTS } from '../../constants';
 
 export function useVideoControls() {
@@ -32,15 +32,24 @@ export function useVideoControls() {
     }
   }, [showControls, hideControls, showControlsAndScheduleHide]);
 
-  return {
+  const actions = useMemo(() => ({
+    showControlsTemporarily,
+    showControlsAndScheduleHide,
+    hideControls,
+    toggleControls,
+    clearHideControlsTimeout,
+    scheduleHideControls,
+  }), [
+    showControlsTemporarily,
+    showControlsAndScheduleHide,
+    hideControls,
+    toggleControls,
+    clearHideControlsTimeout,
+    scheduleHideControls,
+  ]);
+
+  return useMemo(() => ({
     showControls,
-    actions: {
-      showControlsTemporarily,
-      showControlsAndScheduleHide,
-      hideControls,
-      toggleControls,
-      clearHideControlsTimeout,
-      scheduleHideControls,
-    },
-  };
+    actions,
+  }), [showControls, actions]);
 }

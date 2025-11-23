@@ -1,7 +1,7 @@
-import { useVideoPlayer } from 'expo-video';
-import { useCallback } from 'react';
-import type { Channel } from '@/types/playlist.types';
 import { useVideoPlayerStore } from '@/states/video/player-store';
+import type { Channel } from '@/types/playlist.types';
+import { useVideoPlayer } from 'expo-video';
+import { useCallback, useMemo } from 'react';
 
 interface UseVideoPlayerStateProps {
   channel: Channel;
@@ -94,22 +94,41 @@ export function useVideoPlayerState({ channel }: UseVideoPlayerStateProps) {
     }
   }, [videoPlayer]);
 
-  return {
+  const actions = useMemo(() => ({
+    setIsPlaying,
+    setIsLoading,
+    setLoadingStage,
+    setLoadingProgress,
+    togglePlayPause,
+    stopVideo,
+    playVideo,
+    pauseVideo,
+    replayVideo,
+  }), [
+    setIsPlaying,
+    setIsLoading,
+    setLoadingStage,
+    setLoadingProgress,
+    togglePlayPause,
+    stopVideo,
+    playVideo,
+    pauseVideo,
+    replayVideo,
+  ]);
+
+  return useMemo(() => ({
     player: videoPlayer,
     isPlaying,
     isLoading,
     loadingStage,
     loadingProgress,
-    actions: {
-      setIsPlaying,
-      setIsLoading,
-      setLoadingStage,
-      setLoadingProgress,
-      togglePlayPause,
-      stopVideo,
-      playVideo,
-      pauseVideo,
-      replayVideo,
-    },
-  };
+    actions,
+  }), [
+    videoPlayer,
+    isPlaying,
+    isLoading,
+    loadingStage,
+    loadingProgress,
+    actions,
+  ]);
 }

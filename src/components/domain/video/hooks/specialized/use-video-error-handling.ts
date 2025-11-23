@@ -1,7 +1,7 @@
-import { useCallback } from 'react';
-import { Alert } from 'react-native';
 import { useVideoErrorStore } from '@/states/video/error-store';
-import { getVideoErrorInfo, calculateRetryDelay, type RawVideoError } from '../../types/video-error.types';
+import { useCallback, useMemo } from 'react';
+import { Alert } from 'react-native';
+import { calculateRetryDelay, getVideoErrorInfo, type RawVideoError } from '../../types/video-error.types';
 
 export function useVideoErrorHandling() {
   const {
@@ -58,18 +58,33 @@ export function useVideoErrorHandling() {
     resetRetryState();
   }, [clearError, resetRetryState]);
 
-  return {
+  const actions = useMemo(() => ({
+    handleError,
+    clearError,
+    startRetry,
+    completeRetry,
+    onRetrySuccess,
+    getRetryDelay,
+  }), [
+    handleError,
+    clearError,
+    startRetry,
+    completeRetry,
+    onRetrySuccess,
+    getRetryDelay,
+  ]);
+
+  return useMemo(() => ({
     hasError,
     error,
     retryState,
     canRetry: canRetry(),
-    actions: {
-      handleError,
-      clearError,
-      startRetry,
-      completeRetry,
-      onRetrySuccess,
-      getRetryDelay,
-    },
-  };
+    actions,
+  }), [
+    hasError,
+    error,
+    retryState,
+    canRetry,
+    actions,
+  ]);
 }
