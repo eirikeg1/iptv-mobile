@@ -28,3 +28,64 @@ export function getRawChannelId(item: any): string {
   const url = item.url || '';
   return `${name}|${url}`;
 }
+
+/**
+ * Check if a channel is marked as favorite
+ * Handles backward compatibility with old favorite formats
+ */
+export function isChannelFavorite(channel: Channel, favoriteChannels: string[]): boolean {
+  const channelId = getChannelId(channel);
+  return favoriteChannels.includes(channelId) ||
+         favoriteChannels.includes(`${channel.name}|${channel.url}`) ||
+         favoriteChannels.includes(channel.name);
+}
+
+/**
+ * Sort channels with favorites first, then alphabetically
+ */
+export function sortChannelsWithFavorites(channels: Channel[], favoriteChannels: string[]): Channel[] {
+  if (favoriteChannels.length === 0) {
+    return channels.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  let favoriteMatches = 0;
+  const sortedChannels = channels.sort((a, b) => {
+    const aIsFavorite = isChannelFavorite(a, favoriteChannels);
+    const bIsFavorite = isChannelFavorite(b, favoriteChannels);
+
+    if (aIsFavorite) favoriteMatches++;
+    if (bIsFavorite && !aIsFavorite) favoriteMatches++;
+
+    if (aIsFavorite && !bIsFavorite) return -1;
+    if (!aIsFavorite && bIsFavorite) return 1;
+
+    return a.name.localeCompare(b.name);
+  });
+
+  console.log(`[sortChannelsWithFavorites] Found ${favoriteMatches} favorite channels in current view`);
+  return sortedChannels;
+}
+
+/**
+ * Filter channels by group name
+ */
+export function filterChannelsByGroup(channels: Channel[], groupName: string): Channel[] {
+  if (!groupName) return channels;
+
+  return channels.filter((channel) => {
+    const channelGroup = channel.group.title || 'Uncategorized';
+    return channelGroup === groupName;
+  });
+}
+
+/**
+ * Filter channels by search text
+ */
+export function filterChannelsBySearch(channels: Channel[], searchText: string): Channel[] {
+  if (!searchText.trim()) return channels;
+
+  const searchLower = searchText.toLowerCase().trim();
+  return channels.filter((channel) =>
+    channel.name.toLowerCase().includes(searchLower)
+  );
+}
