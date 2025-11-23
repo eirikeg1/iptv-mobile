@@ -42,6 +42,11 @@ interface UserState {
 
   // Migration helper
   migrateFavoritesToNewFormat: (userId: string, channels: { name: string; url: string; tvg?: { id?: string } }[]) => Promise<void>;
+
+  // Favorite groups actions
+  getFavoriteGroups: (userId: string) => Promise<string[]>;
+  toggleFavoriteGroup: (userId: string, groupName: string) => Promise<void>;
+  isFavoriteGroup: (userId: string, groupName: string) => Promise<boolean>;
 }
 
 export const useUserStore = create<UserState>((set, get) => ({
@@ -332,5 +337,36 @@ export const useUserStore = create<UserState>((set, get) => ({
   // Migrate favorites to new format
   migrateFavoritesToNewFormat: async (userId: string, channels: { name: string; url: string; tvg?: { id?: string } }[]) => {
     await userRepository.migrateFavoritesToNewFormat(userId, channels);
+  },
+
+  // Get favorite groups
+  getFavoriteGroups: async (userId: string) => {
+    return await userRepository.getFavoriteGroups(userId);
+  },
+
+  // Toggle favorite group
+  toggleFavoriteGroup: async (userId: string, groupName: string) => {
+    console.log('[UserStore] toggleFavoriteGroup called:', { userId, groupName });
+
+    try {
+      const isFav = await userRepository.isFavoriteGroup(userId, groupName);
+
+      if (isFav) {
+        await userRepository.removeFavoriteGroup(userId, groupName);
+      } else {
+        await userRepository.addFavoriteGroup(userId, groupName);
+      }
+
+      console.log('[UserStore] Favorite group toggled successfully');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to toggle favorite group';
+      console.error('[UserStore] Error toggling favorite group:', errorMessage);
+      throw error;
+    }
+  },
+
+  // Check if group is favorite
+  isFavoriteGroup: async (userId: string, groupName: string) => {
+    return await userRepository.isFavoriteGroup(userId, groupName);
   },
 }));

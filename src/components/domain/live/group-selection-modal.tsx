@@ -2,12 +2,13 @@ import { GroupItemComponent, type GroupItem } from '@/components/domain/live/gro
 import { ModalHeader } from '@/components/ui/containers/modal/modal-header';
 import { Input } from '@/components/ui/controls/inputs/input';
 import { ThemedView } from '@/components/ui/display/themed-view';
+import { useFavoriteGroups } from '@/hooks/live/use-favorite-groups';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useMemo, useState } from 'react';
 import {
-  Modal,
-  ScrollView,
-  StyleSheet,
+    Modal,
+    ScrollView,
+    StyleSheet,
 } from 'react-native';
 
 
@@ -28,26 +29,40 @@ export function GroupSelectionModal({
   onGroupSelect,
 }: GroupSelectionModalProps) {
   const [filterText, setFilterText] = useState('');
+  const { favoriteGroups, toggleFavorite } = useFavoriteGroups();
 
   // Theme colors
   const borderColor = useThemeColor({ light: '#ddd', dark: '#333' }, 'icon');
 
-  // Filter groups based on search text
-  const filteredGroups = useMemo(() => {
-    if (!filterText.trim()) {
-      return groups;
+  // Filter and sort groups
+  const displayedGroups = useMemo(() => {
+    let result = groups;
+
+    // Filter
+    if (filterText.trim()) {
+      result = result.filter(group =>
+        group.name.toLowerCase().includes(filterText.toLowerCase())
+      );
     }
-    return groups.filter(group =>
-      group.name.toLowerCase().includes(filterText.toLowerCase())
-    );
-  }, [groups, filterText]);
+
+    // Sort: Favorites first, then alphabetical
+    return [...result].sort((a, b) => {
+      const isAFav = favoriteGroups.includes(a.name);
+      const isBFav = favoriteGroups.includes(b.name);
+
+      if (isAFav && !isBFav) return -1;
+      if (!isAFav && isBFav) return 1;
+
+      return a.name.localeCompare(b.name);
+    });
+  }, [groups, filterText, favoriteGroups]);
 
   // Debug logging
   if (__DEV__ && visible) {
     console.log('Modal is visible, groups:', groups.length);
     console.log('Selected group:', selectedGroupName);
     console.log('Filter text:', filterText);
-    console.log('Filtered groups:', filteredGroups.length);
+    console.log('Displayed groups:', displayedGroups.length);
   }
 
   const handleGroupSelect = (groupName: string) => {
@@ -90,12 +105,14 @@ export function GroupSelectionModal({
           showsVerticalScrollIndicator={true}
         >
           <ThemedView style={styles.grid}>
-            {filteredGroups.map((item) => (
+            {displayedGroups.map((item) => (
               <GroupItemComponent
                 key={item.name || 'all-channels'}
                 item={item}
                 isSelected={item.name === selectedGroupName}
                 onPress={handleGroupSelect}
+                isFavorite={favoriteGroups.includes(item.name)}
+                onToggleFavorite={toggleFavorite}
               />
             ))}
           </ThemedView>

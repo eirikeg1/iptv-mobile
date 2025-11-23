@@ -2,10 +2,10 @@ import { useRouter } from 'expo-router';
 import { useCallback } from 'react';
 
 import { LiveScreenContent } from '@/components/domain/live/live-screen-content';
-import { useThemeColor } from '@/hooks/use-theme-color';
-import { usePlaylistData } from '@/hooks/live/use-playlist-data';
-import { useFavoriteChannels } from '@/hooks/live/use-favorite-channels';
 import { useChannelFiltering } from '@/hooks/live/use-channel-filtering';
+import { useFavoriteChannels } from '@/hooks/live/use-favorite-channels';
+import { usePlaylistData } from '@/hooks/live/use-playlist-data';
+import { useThemeColor } from '@/hooks/use-theme-color';
 import type { Channel } from '@/types/playlist.types';
 
 export default function LiveScreen() {

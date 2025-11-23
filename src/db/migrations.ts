@@ -274,6 +274,30 @@ const migrations: Migration[] = [
       }
     },
   },
+  {
+    version: 6,
+    name: 'add_user_favorite_groups',
+    up: async (db) => {
+      // Create user_favorite_groups table
+      await db.execAsync(`
+        CREATE TABLE IF NOT EXISTS user_favorite_groups (
+          id TEXT PRIMARY KEY NOT NULL,
+          userId TEXT NOT NULL,
+          groupName TEXT NOT NULL,
+          addedAt TEXT NOT NULL,
+          FOREIGN KEY (userId) REFERENCES users (id) ON DELETE CASCADE,
+          UNIQUE(userId, groupName)
+        );
+      `);
+
+      // Create index for performance
+      await db.execAsync(`
+        CREATE INDEX IF NOT EXISTS idx_user_favorite_groups_userId ON user_favorite_groups (userId);
+      `);
+
+      console.log('[Migration] Added user_favorite_groups table');
+    },
+  },
 ];
 
 /**

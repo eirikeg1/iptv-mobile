@@ -1,7 +1,7 @@
 import { IconSymbol } from '@/components/ui/display/icon-symbol';
 import { ThemedText } from '@/components/ui/display/themed-text';
 import { useSelectionColors } from '@/constants/selection-theme';
-import { Dimensions, StyleSheet, TouchableOpacity } from 'react-native';
+import { Dimensions, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 const { width } = Dimensions.get('window');
 const ITEM_WIDTH = (width - 64) / 2; // 2 columns with padding
@@ -26,18 +26,36 @@ export interface GroupItemProps {
    * Callback when group is pressed
    */
   onPress: (groupName: string) => void;
+
+  /**
+   * Whether this group is a favorite
+   */
+  isFavorite?: boolean;
+
+  /**
+   * Callback when favorite is toggled
+   */
+  onToggleFavorite?: (groupName: string) => void;
 }
 
 export function GroupItemComponent({
   item,
   isSelected,
   onPress,
+  isFavorite,
+  onToggleFavorite,
 }: GroupItemProps) {
   const selectionColors = useSelectionColors();
   const colors = isSelected ? selectionColors.selected : selectionColors.unselected;
 
   const handlePress = () => {
     onPress(item.name);
+  };
+
+  const handleFavoritePress = () => {
+    if (onToggleFavorite) {
+      onToggleFavorite(item.name);
+    }
   };
 
   const displayName = item.name || 'All Channels';
@@ -58,12 +76,27 @@ export function GroupItemComponent({
       accessibilityLabel={`Select ${displayName} group`}
       accessibilityHint={`${item.channelCount} channels in this group`}
     >
-      <IconSymbol
-        name="folder"
-        size={24}
-        color={colors.icon}
-        style={styles.groupIcon}
-      />
+      <View style={styles.headerContainer}>
+        <IconSymbol
+          name="folder"
+          size={24}
+          color={colors.icon}
+          style={styles.groupIcon}
+        />
+        {onToggleFavorite && (
+          <TouchableOpacity 
+            onPress={handleFavoritePress}
+            style={styles.favoriteButton}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <IconSymbol
+              name={isFavorite ? 'star.fill' : 'star'}
+              size={20}
+              color={isFavorite ? '#FFD700' : colors.icon}
+            />
+          </TouchableOpacity>
+        )}
+      </View>
 
       <ThemedText
         style={[
@@ -97,8 +130,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     minHeight: 120,
   },
-  groupIcon: {
+  headerContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: 8,
+    position: 'relative',
+  },
+  groupIcon: {
+    // Centered icon
+  },
+  favoriteButton: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
   },
   groupName: {
     fontSize: 14,

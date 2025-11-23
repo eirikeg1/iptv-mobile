@@ -1,9 +1,7 @@
-import { useCallback } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { LiveTopBar } from '@/components/domain/live/live-top-bar';
 import { ChannelItem } from '@/components/domain/live/channel-item';
 import { LiveEmptyState } from '@/components/domain/live/live-empty-state';
 import { LiveLoadingSpinner } from '@/components/domain/live/live-loading-spinner';
+import { LiveTopBar } from '@/components/domain/live/live-top-bar';
 import InfiniteParallaxGrid from '@/components/ui/containers/infinite-parallax-grid';
 import { IconSymbol } from '@/components/ui/display/icon-symbol';
 import { ThemedText } from '@/components/ui/display/themed-text';
@@ -12,6 +10,8 @@ import { isChannelFavorite } from '@/lib/channel-utils';
 import type { GroupOption } from '@/lib/group-utils';
 import type { Channel, Playlist } from '@/types/playlist.types';
 import type { ListRenderItemInfo } from '@shopify/flash-list';
+import { useCallback } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 interface LiveScreenContentProps {
   isLoading: boolean;
@@ -22,10 +22,10 @@ interface LiveScreenContentProps {
   selectedGroup: string;
   searchText: string;
   isRefreshing: boolean;
-  onGroupSelect: (groupName: string) => void;
+  onGroupSelect: (group: string) => void;
   onSearchChange: (text: string) => void;
   onChannelPress: (channel: Channel) => void;
-  onRefresh: () => Promise<void>;
+  onRefresh: () => void;
   backgroundColor: string;
   iconColor: string;
   tintColor: string;
@@ -155,13 +155,13 @@ export function LiveScreenContent({
         }
         ListHeaderComponentAfterParallax={
           <ThemedView style={[styles.contentContainer, styles.gridBackground]}>
-            <LiveTopBar
-              groups={groups}
-              selectedGroupName={selectedGroup}
-              onGroupSelect={onGroupSelect}
-              searchText={searchText}
-              onSearchTextChange={onSearchChange}
-            />
+              <LiveTopBar
+                groups={groups}
+                selectedGroupName={selectedGroup}
+                onGroupSelect={onGroupSelect}
+                searchText={searchText}
+                onSearchTextChange={onSearchChange}
+              />
           </ThemedView>
         }
         columns={4}

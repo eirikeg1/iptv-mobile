@@ -1,18 +1,15 @@
+import { getChannelId } from '@/lib/channel-utils';
 import type {
-  User,
-  UserSettings,
-  UserFavoriteChannel,
-  UserHiddenChannel,
-  UserChannelOrder,
-  UserWatchHistory,
-  UserPlaybackPosition,
-  CreateUserInput,
-  UpdateUserInput,
+    CreateUserInput,
+    UpdateUserInput,
+    User,
+    UserPlaybackPosition,
+    UserSettings,
+    UserWatchHistory
 } from '@/types/user.types';
 import { DEFAULT_USER_SETTINGS } from '@/types/user.types';
-import { getChannelId } from '@/lib/channel-utils';
-import { executeQuery, executeQuerySingle, executeStatement, executeTransaction } from './sqlite-client';
 import { randomUUID } from 'expo-crypto';
+import { executeQuery, executeQuerySingle, executeStatement, executeTransaction } from './sqlite-client';
 
 /**
  * Repository interface for user data access
@@ -41,6 +38,12 @@ export interface IUserRepository {
   hideChannel(userId: string, channelId: string): Promise<void>;
   unhideChannel(userId: string, channelId: string): Promise<void>;
   isChannelHidden(userId: string, channelId: string): Promise<boolean>;
+
+  // Favorite groups operations
+  getFavoriteGroups(userId: string): Promise<string[]>;
+  addFavoriteGroup(userId: string, groupName: string): Promise<void>;
+  removeFavoriteGroup(userId: string, groupName: string): Promise<void>;
+  isFavoriteGroup(userId: string, groupName: string): Promise<boolean>;
 
   // Channel ordering operations
   getChannelOrder(userId: string): Promise<Map<string, number>>;
@@ -98,6 +101,13 @@ interface UserHiddenChannelRow {
   userId: string;
   channelId: string;
   hiddenAt: string;
+}
+
+interface UserFavoriteGroupRow {
+  id: string;
+  userId: string;
+  groupName: string;
+  addedAt: string;
 }
 
 interface UserChannelOrderRow {
@@ -399,6 +409,42 @@ class SQLiteUserRepository implements IUserRepository {
     const row = await executeQuerySingle<{ count: number }>(
       'SELECT COUNT(*) as count FROM user_hidden_channels WHERE userId = ? AND channelId = ?',
       [userId, channelId]
+    );
+
+    return (row?.count || 0) > 0;
+  }
+
+  async getFavoriteGroups(userId: string): Promise<string[]> {
+    const rows = await executeQuery<UserFavoriteGroupRow>(
+      'SELECT groupName FROM user_favorite_groups WHERE userId = ? ORDER BY addedAt DESC',
+      [userId]
+    );
+
+    return rows.map(row => row.groupName);
+  }
+
+  async addFavoriteGroup(userId: string, groupName: string): Promise<void> {
+    console.log('[UserRepository] addFavoriteGroup called:', { userId, groupName });
+
+    await executeStatement(
+      'INSERT OR IGNORE INTO user_favorite_groups (id, userId, groupName, addedAt) VALUES (?, ?, ?, ?)',
+      [randomUUID(), userId, groupName, new Date().toISOString()]
+    );
+  }
+
+  async removeFavoriteGroup(userId: string, groupName: string): Promise<void> {
+    console.log('[UserRepository] removeFavoriteGroup called:', { userId, groupName });
+
+    await executeStatement(
+      'DELETE FROM user_favorite_groups WHERE userId = ? AND groupName = ?',
+      [userId, groupName]
+    );
+  }
+
+  async isFavoriteGroup(userId: string, groupName: string): Promise<boolean> {
+    const row = await executeQuerySingle<{ count: number }>(
+      'SELECT COUNT(*) as count FROM user_favorite_groups WHERE userId = ? AND groupName = ?',
+      [userId, groupName]
     );
 
     return (row?.count || 0) > 0;
