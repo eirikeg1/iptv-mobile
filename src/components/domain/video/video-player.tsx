@@ -3,9 +3,9 @@ import { View } from 'react-native';
 
 import type { Channel } from '@/types/playlist.types';
 import { useVideoPlayerLogic } from './hooks/use-video-player';
+import { LoadingProgress } from './loading-progress';
 import { VideoControls, VideoTapOverlay } from './video-controls';
 import { VideoErrorState } from './video-states';
-import { LoadingProgress } from './loading-progress';
 
 interface VideoPlayerProps {
   channel: Channel;
@@ -33,6 +33,7 @@ export function VideoPlayer({ channel, onBack, onStopVideo, onRegisterStopFuncti
     isPlaying,
     networkState,
     retryState,
+    toggleControls,
   } = useVideoPlayerLogic({
     channel,
     onStopVideo,
@@ -76,10 +77,11 @@ export function VideoPlayer({ channel, onBack, onStopVideo, onRegisterStopFuncti
             onBack={onBack}
             onTogglePlayPause={togglePlayPause}
             onClearTimeout={clearHideControlsTimeout}
+            onToggleControls={toggleControls}
           />
         )}
         {!showControls && !hasError && !isLoading && (
-          <VideoTapOverlay onTap={showControlsTemporarily} />
+          <VideoTapOverlay onTap={() => showControlsTemporarily()} />
         )}
       </View>
     </View>

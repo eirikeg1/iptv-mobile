@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useRef } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
 import type { Channel } from '@/types/playlist.types';
-import { useVideoPlayerState } from './use-video-player-state';
-import { useVideoErrorHandling } from './use-video-error-handling';
-import { useVideoControls } from './use-video-controls';
-import { useVideoNetwork } from './use-video-network';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback, useEffect, useRef } from 'react';
 import { getVideoErrorInfo } from '../../types/video-error.types';
+import { useVideoControls } from './use-video-controls';
+import { useVideoErrorHandling } from './use-video-error-handling';
+import { useVideoNetwork } from './use-video-network';
+import { useVideoPlayerState } from './use-video-player-state';
 
 interface UseVideoOrchestratorProps {
   channel: Channel;
@@ -100,7 +100,13 @@ export function useVideoOrchestrator({
         playerState.actions.setIsLoading(false);
         errorHandling.actions.onRetrySuccess();
         playerState.actions.playVideo();
-        controls.actions.showControlsAndScheduleHide();
+
+        // Use a shorter timeout initially, then switch to temporary showing
+        setTimeout(() => {
+          if (!isUnmountedRef.current) {
+            controls.actions.showControlsTemporarily(4000);
+          }
+        }, 500);
       } else if (status === 'error' || error) {
         console.log('Video error:', error);
         playerState.actions.setIsLoading(false);
@@ -155,15 +161,16 @@ export function useVideoOrchestrator({
   );
 
   // Cleanup
+  const { clearHideControlsTimeout } = controls.actions;
   useEffect(() => {
     return () => {
-      controls.actions.clearHideControlsTimeout();
+      clearHideControlsTimeout();
       if (retryTimeoutRef.current) {
         clearTimeout(retryTimeoutRef.current);
         retryTimeoutRef.current = null;
       }
     };
-  }, [controls.actions]);
+  }, [clearHideControlsTimeout]);
 
   // Track unmount state
   useEffect(() => {
@@ -197,5 +204,6 @@ export function useVideoOrchestrator({
     retryPlayback,
     showControlsTemporarily: controls.actions.showControlsTemporarily,
     clearHideControlsTimeout: controls.actions.clearHideControlsTimeout,
+    toggleControls: controls.actions.toggleControls,
   };
 }
